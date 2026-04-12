@@ -1,0 +1,35 @@
+# Root .dockerignore — build context is the repo root for Fly.io builds.
+# Keep in sync with backend/.dockerignore where patterns overlap.
+
+# VCS / editor / IDE
+.git/
+.github/
+.vscode/
+.vs/
+.idea/
+*.user
+*.suo
+
+# Frontend — not part of the backend image
+frontend/
+
+# Docs & tooling
+docs/
+DOCS.md
+*.md
+!backend/**/*.md
+
+# GitNexus index
+.gitnexus/
+.claude/
+
+# Local secrets (gitignored already, but double-guard)
+.firebase-sa-base64.txt
+backend/firebase-service-account.json
+backend/appsettings.Development.json
+
+# Build artifacts
+backend/bin/
+backend/obj/
+backend/**/bin/
+backend/**/obj/
