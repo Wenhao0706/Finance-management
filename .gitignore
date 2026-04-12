@@ -11,6 +11,7 @@ frontend/.angular/
 # IDE
 .vs/
 .vscode/
+.idea/
 *.suo
 *.user
 
@@ -22,8 +23,20 @@ DOCS.md
 CLAUDE.md
 AGENTS.md
 
-# Local secrets that must never be committed
+# Local secrets — defense in depth (also ignored in backend/.gitignore)
 .firebase-sa-base64.txt
+**/firebase-service-account.json
+**/*service-account*.json
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# Env files (commit .env.example only)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
 
 # OS
 Thumbs.db
