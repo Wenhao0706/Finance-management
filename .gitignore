@@ -17,8 +17,10 @@ frontend/.angular/
 # Personal docs
 DOCS.md
 
-# Claude Code local session state
+# AI agent / Claude Code tooling (internal dev only — not for GitHub)
 .claude/
+CLAUDE.md
+AGENTS.md
 
 # Local secrets that must never be committed
 .firebase-sa-base64.txt
