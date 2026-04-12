@@ -2,6 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { initializeApp, FirebaseApp } from 'firebase/app';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import {
   getAuth,
   Auth,
@@ -37,6 +38,12 @@ export class AuthService {
 
   constructor(private router: Router, private ngZone: NgZone) {
     this.app = initializeApp(environment.firebase);
+
+    initializeAppCheck(this.app, {
+      provider: new ReCaptchaV3Provider(environment.recaptchaSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+
     this.auth = getAuth(this.app);
 
     onAuthStateChanged(this.auth, (user) => {
