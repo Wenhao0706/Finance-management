@@ -1,18 +1,35 @@
-<div class="app-layout">
-  <nav class="sidebar">
-    <div class="brand">
-      <h2>FinanceApp</h2>
+@if (isInitialized$ | async) {
+  @if (isLoggedIn$ | async) {
+    <!-- Email verification banner -->
+    @if ((emailVerified$ | async) === false) {
+      <div class="verify-banner">
+        Please verify your email address. Check your inbox for a verification link.
+      </div>
+    }
+
+    <div class="app-layout">
+      <nav class="sidebar">
+        <div class="brand">
+          <h2>FinanceApp</h2>
+        </div>
+        <ul class="nav-links">
+          <li>
+            <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+          </li>
+          <li>
+            <a routerLink="/transactions" routerLinkActive="active">Transactions</a>
+          </li>
+        </ul>
+        <div class="sidebar-footer">
+          <div class="user-info">{{ userName$ | async }}</div>
+          <button class="logout-btn" (click)="logout()">Sign out</button>
+        </div>
+      </nav>
+      <main class="content">
+        <router-outlet />
+      </main>
     </div>
-    <ul class="nav-links">
-      <li>
-        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-      </li>
-      <li>
-        <a routerLink="/transactions" routerLinkActive="active">Transactions</a>
-      </li>
-    </ul>
-  </nav>
-  <main class="content">
+  } @else {
     <router-outlet />
-  </main>
-</div>
+  }
+}
