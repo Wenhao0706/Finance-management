@@ -1,9 +1,9 @@
 <div class="auth-page">
-  <!-- Branding Panel -->
+  <!-- Branding Panel (desktop only) -->
   <div class="brand-panel">
     <div class="brand-content">
       <div class="brand-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="12" y1="1" x2="12" y2="23"></line>
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
         </svg>
@@ -15,14 +15,25 @@
 
   <!-- Form Panel -->
   <div class="form-panel">
+    <!-- Mobile-only brand header -->
+    <div class="mobile-brand">
+      <div class="mobile-brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </div>
+      <span>FinanceApp</span>
+    </div>
+
     <div class="form-container">
 
-      <!-- Error / Success Messages -->
+      <!-- Top-level Error / Success messages -->
       @if (errorMessage()) {
-        <div class="message error">{{ errorMessage() }}</div>
+        <div class="message error" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
       }
       @if (successMessage()) {
-        <div class="message success">{{ successMessage() }}</div>
+        <div class="message success" role="status" aria-live="polite">{{ successMessage() }}</div>
       }
 
       <!-- LOGIN VIEW -->
@@ -30,55 +41,89 @@
         <h2>Welcome back</h2>
         <p class="subtitle">Sign in to your account</p>
 
-        <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+        <form (ngSubmit)="onLogin()" #loginForm="ngForm" novalidate>
           <div class="field">
             <label for="login-email">Email</label>
             <input
               id="login-email"
               type="email"
+              autocomplete="email"
               [(ngModel)]="loginEmail"
               name="email"
               required
               email
               placeholder="you@example.com"
+              [attr.aria-invalid]="emailField.touched && emailField.errors ? 'true' : null"
+              [attr.aria-describedby]="emailField.touched && emailField.errors ? 'login-email-error' : null"
               #emailField="ngModel"
             />
             @if (emailField.touched && emailField.errors) {
-              <span class="field-error">Please enter a valid email.</span>
+              <span id="login-email-error" class="field-error" role="alert">Please enter a valid email.</span>
             }
           </div>
 
           <div class="field">
             <label for="login-password">Password</label>
-            <input
-              id="login-password"
-              type="password"
-              [(ngModel)]="loginPassword"
-              name="password"
-              required
-              minlength="8"
-              placeholder="Min. 8 characters"
-              #passwordField="ngModel"
-            />
+            <div class="password-wrapper">
+              <input
+                id="login-password"
+                [type]="showLoginPassword() ? 'text' : 'password'"
+                autocomplete="current-password"
+                [(ngModel)]="loginPassword"
+                name="password"
+                required
+                minlength="8"
+                placeholder="Min. 8 characters"
+                [attr.aria-invalid]="passwordField.touched && passwordField.errors ? 'true' : null"
+                [attr.aria-describedby]="passwordField.touched && passwordField.errors ? 'login-password-error' : null"
+                #passwordField="ngModel"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="togglePassword('login')"
+                [attr.aria-label]="showLoginPassword() ? 'Hide password' : 'Show password'"
+                [attr.aria-pressed]="showLoginPassword()"
+              >
+                @if (showLoginPassword()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                    <line x1="2" y1="2" x2="22" y2="22"></line>
+                  </svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                }
+              </button>
+            </div>
             @if (passwordField.touched && passwordField.errors) {
-              <span class="field-error">Password must be at least 8 characters.</span>
+              <span id="login-password-error" class="field-error" role="alert">Password must be at least 8 characters.</span>
             }
           </div>
 
           <div class="field-row">
             <span></span>
-            <a class="link" (click)="setView('forgot-password')">Forgot password?</a>
+            <button type="button" class="link-button" (click)="setView('forgot-password')">Forgot password?</button>
           </div>
 
           <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || loading()">
-            {{ loading() ? 'Signing in...' : 'Sign in' }}
+            @if (loading()) {
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Signing in...</span>
+            } @else {
+              <span>Sign in</span>
+            }
           </button>
         </form>
 
         <div class="divider"><span>or</span></div>
 
         <button class="btn-google" (click)="onGoogleSignIn()" [disabled]="loading()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
             <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
             <path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
             <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
@@ -89,7 +134,7 @@
 
         <p class="footer-text">
           Don't have an account?
-          <a class="link" (click)="setView('register')">Sign up</a>
+          <button type="button" class="link-button" (click)="setView('register')">Sign up</button>
         </p>
       }
 
@@ -98,20 +143,23 @@
         <h2>Create account</h2>
         <p class="subtitle">Start managing your finances</p>
 
-        <form (ngSubmit)="onRegister()" #registerForm="ngForm">
+        <form (ngSubmit)="onRegister()" #registerForm="ngForm" novalidate>
           <div class="field">
             <label for="reg-name">Full Name</label>
             <input
               id="reg-name"
               type="text"
+              autocomplete="name"
               [(ngModel)]="registerName"
               name="name"
               required
               placeholder="John Doe"
+              [attr.aria-invalid]="nameField.touched && nameField.errors ? 'true' : null"
+              [attr.aria-describedby]="nameField.touched && nameField.errors ? 'reg-name-error' : null"
               #nameField="ngModel"
             />
             @if (nameField.touched && nameField.errors) {
-              <span class="field-error">Full name is required.</span>
+              <span id="reg-name-error" class="field-error" role="alert">Full name is required.</span>
             }
           </div>
 
@@ -120,45 +168,105 @@
             <input
               id="reg-email"
               type="email"
+              autocomplete="email"
               [(ngModel)]="registerEmail"
               name="email"
               required
               email
               placeholder="you@example.com"
+              [attr.aria-invalid]="regEmailField.touched && regEmailField.errors ? 'true' : null"
+              [attr.aria-describedby]="regEmailField.touched && regEmailField.errors ? 'reg-email-error' : null"
               #regEmailField="ngModel"
             />
             @if (regEmailField.touched && regEmailField.errors) {
-              <span class="field-error">Please enter a valid email.</span>
+              <span id="reg-email-error" class="field-error" role="alert">Please enter a valid email.</span>
             }
           </div>
 
           <div class="field">
             <label for="reg-password">Password</label>
-            <input
-              id="reg-password"
-              type="password"
-              [(ngModel)]="registerPassword"
-              name="password"
-              required
-              minlength="8"
-              placeholder="Min. 8 characters"
-              #regPasswordField="ngModel"
-            />
+            <div class="password-wrapper">
+              <input
+                id="reg-password"
+                [type]="showRegisterPassword() ? 'text' : 'password'"
+                autocomplete="new-password"
+                [ngModel]="registerPassword()"
+                (ngModelChange)="registerPassword.set($event)"
+                name="password"
+                required
+                minlength="8"
+                placeholder="Min. 8 characters"
+                [attr.aria-invalid]="regPasswordField.touched && regPasswordField.errors ? 'true' : null"
+                [attr.aria-describedby]="regPasswordField.touched && regPasswordField.errors ? 'reg-password-error' : null"
+                #regPasswordField="ngModel"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="togglePassword('register')"
+                [attr.aria-label]="showRegisterPassword() ? 'Hide password' : 'Show password'"
+                [attr.aria-pressed]="showRegisterPassword()"
+              >
+                @if (showRegisterPassword()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                    <line x1="2" y1="2" x2="22" y2="22"></line>
+                  </svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                }
+              </button>
+            </div>
             @if (regPasswordField.touched && regPasswordField.errors) {
-              <span class="field-error">Password must be at least 8 characters.</span>
+              <span id="reg-password-error" class="field-error" role="alert">Password must be at least 8 characters.</span>
             }
           </div>
 
           <div class="field">
             <label for="reg-confirm">Confirm Password</label>
-            <input
-              id="reg-confirm"
-              type="password"
-              [(ngModel)]="registerConfirmPassword"
-              name="confirmPassword"
-              required
-              placeholder="Re-enter password"
-            />
+            <div class="password-wrapper">
+              <input
+                id="reg-confirm"
+                [type]="showRegisterConfirm() ? 'text' : 'password'"
+                autocomplete="new-password"
+                [ngModel]="registerConfirmPassword()"
+                (ngModelChange)="registerConfirmPassword.set($event)"
+                name="confirmPassword"
+                required
+                placeholder="Re-enter password"
+                [attr.aria-invalid]="passwordsMismatch() ? 'true' : null"
+                [attr.aria-describedby]="passwordsMismatch() ? 'reg-confirm-error' : null"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="togglePassword('confirm')"
+                [attr.aria-label]="showRegisterConfirm() ? 'Hide password' : 'Show password'"
+                [attr.aria-pressed]="showRegisterConfirm()"
+              >
+                @if (showRegisterConfirm()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                    <line x1="2" y1="2" x2="22" y2="22"></line>
+                  </svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                }
+              </button>
+            </div>
+            @if (passwordsMismatch()) {
+              <span id="reg-confirm-error" class="field-error" role="alert">Passwords do not match.</span>
+            }
           </div>
 
           <div class="field checkbox-field">
@@ -168,18 +276,24 @@
                 [(ngModel)]="registerTerms"
                 name="terms"
               />
-              I agree to the Terms & Conditions
+              I agree to the
+              <a href="/terms" target="_blank" rel="noopener" class="inline-link">Terms &amp; Conditions</a>
             </label>
           </div>
 
-          <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || loading()">
-            {{ loading() ? 'Creating account...' : 'Create account' }}
+          <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || passwordsMismatch() || loading()">
+            @if (loading()) {
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Creating account...</span>
+            } @else {
+              <span>Create account</span>
+            }
           </button>
         </form>
 
         <p class="footer-text">
           Already have an account?
-          <a class="link" (click)="setView('login')">Sign in</a>
+          <button type="button" class="link-button" (click)="setView('login')">Sign in</button>
         </p>
       }
 
@@ -188,31 +302,39 @@
         <h2>Reset password</h2>
         <p class="subtitle">Enter your email and we'll send you a reset link</p>
 
-        <form (ngSubmit)="onForgotPassword()" #forgotForm="ngForm">
+        <form (ngSubmit)="onForgotPassword()" #forgotForm="ngForm" novalidate>
           <div class="field">
             <label for="forgot-email">Email</label>
             <input
               id="forgot-email"
               type="email"
+              autocomplete="email"
               [(ngModel)]="forgotEmail"
               name="email"
               required
               email
               placeholder="you@example.com"
+              [attr.aria-invalid]="forgotEmailField.touched && forgotEmailField.errors ? 'true' : null"
+              [attr.aria-describedby]="forgotEmailField.touched && forgotEmailField.errors ? 'forgot-email-error' : null"
               #forgotEmailField="ngModel"
             />
             @if (forgotEmailField.touched && forgotEmailField.errors) {
-              <span class="field-error">Please enter a valid email.</span>
+              <span id="forgot-email-error" class="field-error" role="alert">Please enter a valid email.</span>
             }
           </div>
 
           <button type="submit" class="btn-primary" [disabled]="forgotForm.invalid || loading()">
-            {{ loading() ? 'Sending...' : 'Send reset link' }}
+            @if (loading()) {
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Sending...</span>
+            } @else {
+              <span>Send reset link</span>
+            }
           </button>
         </form>
 
         <p class="footer-text">
-          <a class="link" (click)="setView('login')">Back to sign in</a>
+          <button type="button" class="link-button" (click)="setView('login')">Back to sign in</button>
         </p>
       }
 

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -18,6 +18,11 @@ export class LoginComponent {
   errorMessage = signal('');
   successMessage = signal('');
 
+  // Password visibility toggles
+  showLoginPassword = signal(false);
+  showRegisterPassword = signal(false);
+  showRegisterConfirm = signal(false);
+
   // Login fields
   loginEmail = '';
   loginPassword = '';
@@ -25,9 +30,14 @@ export class LoginComponent {
   // Register fields
   registerName = '';
   registerEmail = '';
-  registerPassword = '';
-  registerConfirmPassword = '';
+  registerPassword = signal('');
+  registerConfirmPassword = signal('');
   registerTerms = false;
+
+  passwordsMismatch = computed(() => {
+    const confirm = this.registerConfirmPassword();
+    return confirm.length > 0 && this.registerPassword() !== confirm;
+  });
 
   // Forgot password fields
   forgotEmail = '';
@@ -38,6 +48,18 @@ export class LoginComponent {
     this.viewMode.set(mode);
     this.errorMessage.set('');
     this.successMessage.set('');
+    this.showLoginPassword.set(false);
+    this.showRegisterPassword.set(false);
+    this.showRegisterConfirm.set(false);
+  }
+
+  togglePassword(field: 'login' | 'register' | 'confirm'): void {
+    const map = {
+      login: this.showLoginPassword,
+      register: this.showRegisterPassword,
+      confirm: this.showRegisterConfirm,
+    };
+    map[field].update((v) => !v);
   }
 
   async onLogin(): Promise<void> {
@@ -55,7 +77,7 @@ export class LoginComponent {
   async onRegister(): Promise<void> {
     this.errorMessage.set('');
 
-    if (this.registerPassword !== this.registerConfirmPassword) {
+    if (this.passwordsMismatch()) {
       this.errorMessage.set('Passwords do not match.');
       return;
     }
@@ -66,7 +88,7 @@ export class LoginComponent {
 
     this.loading.set(true);
     try {
-      await this.authService.register(this.registerEmail, this.registerPassword, this.registerName);
+      await this.authService.register(this.registerEmail, this.registerPassword(), this.registerName);
       this.setView('login');
       this.successMessage.set('Account created! Check your email to verify.');
     } catch (error) {
@@ -81,12 +103,12 @@ export class LoginComponent {
     this.loading.set(true);
     try {
       await this.authService.forgotPassword(this.forgotEmail);
-      this.successMessage.set('If an account exists, we\'ve sent a reset link.');
-      setTimeout(() => this.setView('login'), 3000);
+      this.successMessage.set('If an account exists, we\'ve sent a reset link. Check your inbox — and spam folder if you don\'t see it within a minute.');
+      setTimeout(() => this.setView('login'), 5000);
     } catch {
       // Always show generic message (anti-enumeration)
-      this.successMessage.set('If an account exists, we\'ve sent a reset link.');
-      setTimeout(() => this.setView('login'), 3000);
+      this.successMessage.set('If an account exists, we\'ve sent a reset link. Check your inbox — and spam folder if you don\'t see it within a minute.');
+      setTimeout(() => this.setView('login'), 5000);
     } finally {
       this.loading.set(false);
     }
