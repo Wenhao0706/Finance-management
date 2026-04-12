@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://finance-management-api.fly.dev/api',
+  apiUrl: 'https://api.finance.manhou.de/api',
   recaptchaSiteKey: '6LfupLMsAAAAAFpsWljyB8V7uYcmifnGpRPmhVlH',
   firebase: {
     apiKey: 'AIzaSyDekCoHUXjrMsBzh10bXWqD8zANV46D_Lc',
