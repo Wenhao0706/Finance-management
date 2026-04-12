@@ -20,6 +20,9 @@ DOCS.md
 # Claude Code local session state
 .claude/
 
+# Local secrets that must never be committed
+.firebase-sa-base64.txt
+
 # OS
 Thumbs.db
 .DS_Store

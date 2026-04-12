@@ -1,21 +1,20 @@
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: finance-sqlserver
+  postgres:
+    image: postgres:16-alpine
+    container_name: finance-postgres
     environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}"
-      MSSQL_PID: "Express"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-YourStrong!Passw0rd}"
+      POSTGRES_DB: financemanagement
     ports:
-      - "1433:1433"
+      - "5432:5432"
     volumes:
-      - sqlserver-data:/var/opt/mssql
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -No -Q "SELECT 1" || exit 1
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d financemanagement"]
+      interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 30s
 
   backend:
     build:
@@ -23,19 +22,16 @@ services:
       dockerfile: Dockerfile
     container_name: finance-backend
     depends_on:
-      sqlserver:
+      postgres:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=FinanceManagement;User Id=sa;Password=${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=financemanagement;Username=postgres;Password=${POSTGRES_PASSWORD:-YourStrong!Passw0rd}"
       Cors__AllowedOrigins__0: "http://localhost:4200"
     ports:
       - "5143:8080"
     volumes:
-      # Mount the Firebase service account JSON from host into the container.
-      # Keep the file at backend/firebase-service-account.json locally
-      # (it's gitignored). If absent, auth middleware will fail loudly.
       - ./backend/firebase-service-account.json:/app/firebase-service-account.json:ro
 
 volumes:
-  sqlserver-data:
+  postgres-data:
