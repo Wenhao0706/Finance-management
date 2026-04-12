@@ -12,6 +12,10 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Transaction>()
+            .Property(t => t.Amount)
+            .HasPrecision(18, 2);
+
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Salary", Type = "income", Icon = "payments" },
             new Category { Id = 2, Name = "Freelance", Type = "income", Icon = "work" },
