@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FinanceManagement.API.Data;
@@ -13,22 +14,36 @@ public class TransactionsController : ControllerBase
 
     public TransactionsController(AppDbContext db) => _db = db;
 
+    private string? CurrentUserId => User.FindFirst("firebase_uid")?.Value;
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Transaction>>> GetAll()
     {
-        return await _db.Transactions.OrderByDescending(t => t.Date).ToListAsync();
+        if (CurrentUserId is null) return Unauthorized();
+
+        return await _db.Transactions
+            .Where(t => t.UserId == CurrentUserId)
+            .OrderByDescending(t => t.Date)
+            .ToListAsync();
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Transaction>> Get(int id)
     {
-        var transaction = await _db.Transactions.FindAsync(id);
+        if (CurrentUserId is null) return Unauthorized();
+
+        var transaction = await _db.Transactions
+            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
+
         return transaction is null ? NotFound() : transaction;
     }
 
     [HttpPost]
     public async Task<ActionResult<Transaction>> Create(Transaction transaction)
     {
+        if (CurrentUserId is null) return Unauthorized();
+
+        transaction.UserId = CurrentUserId;
         transaction.CreatedAt = DateTime.UtcNow;
         _db.Transactions.Add(transaction);
         await _db.SaveChangesAsync();
@@ -38,9 +53,20 @@ public class TransactionsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, Transaction transaction)
     {
+        if (CurrentUserId is null) return Unauthorized();
         if (id != transaction.Id) return BadRequest();
 
-        _db.Entry(transaction).State = EntityState.Modified;
+        var existing = await _db.Transactions
+            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
+
+        if (existing is null) return NotFound();
+
+        existing.Description = transaction.Description;
+        existing.Amount = transaction.Amount;
+        existing.Type = transaction.Type;
+        existing.Category = transaction.Category;
+        existing.Date = transaction.Date;
+
         await _db.SaveChangesAsync();
         return NoContent();
     }
@@ -48,7 +74,11 @@ public class TransactionsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var transaction = await _db.Transactions.FindAsync(id);
+        if (CurrentUserId is null) return Unauthorized();
+
+        var transaction = await _db.Transactions
+            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
+
         if (transaction is null) return NotFound();
 
         _db.Transactions.Remove(transaction);
@@ -59,9 +89,11 @@ public class TransactionsController : ControllerBase
     [HttpGet("summary")]
     public async Task<ActionResult<object>> GetSummary()
     {
-        var transactions = await _db.Transactions.ToListAsync();
-        var totalIncome = transactions.Where(t => t.Type == "income").Sum(t => t.Amount);
-        var totalExpense = transactions.Where(t => t.Type == "expense").Sum(t => t.Amount);
+        if (CurrentUserId is null) return Unauthorized();
+
+        var userTransactions = _db.Transactions.Where(t => t.UserId == CurrentUserId);
+        var totalIncome = await userTransactions.Where(t => t.Type == "income").SumAsync(t => (decimal?)t.Amount) ?? 0m;
+        var totalExpense = await userTransactions.Where(t => t.Type == "expense").SumAsync(t => (decimal?)t.Amount) ?? 0m;
 
         return new
         {

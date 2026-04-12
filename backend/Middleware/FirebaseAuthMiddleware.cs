@@ -5,6 +5,13 @@ namespace FinanceManagement.API.Middleware;
 
 public class FirebaseAuthMiddleware
 {
+    private static readonly string[] PublicPathPrefixes =
+    {
+        "/health",
+        "/openapi",
+        "/swagger",
+    };
+
     private readonly RequestDelegate _next;
 
     public FirebaseAuthMiddleware(RequestDelegate next)
@@ -14,6 +21,14 @@ public class FirebaseAuthMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        var path = context.Request.Path.Value ?? "";
+
+        if (PublicPathPrefixes.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+        {
+            await _next(context);
+            return;
+        }
+
         var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
 
         if (authHeader is null || !authHeader.StartsWith("Bearer "))

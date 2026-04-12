@@ -16,6 +16,9 @@ public class AppDbContext : DbContext
             .Property(t => t.Amount)
             .HasPrecision(18, 2);
 
+        modelBuilder.Entity<Transaction>()
+            .HasIndex(t => new { t.UserId, t.Date });
+
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Salary", Type = "income", Icon = "payments" },
             new Category { Id = 2, Name = "Freelance", Type = "income", Icon = "work" },

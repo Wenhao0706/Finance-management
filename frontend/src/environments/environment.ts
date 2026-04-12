@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
+  apiUrl: 'REPLACE_WITH_HOSTED_BACKEND_URL/api',
   firebase: {
     apiKey: 'AIzaSyDekCoHUXjrMsBzh10bXWqD8zANV46D_Lc',
     authDomain: 'finance-management-10a57.firebaseapp.com',

@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Transaction, Summary } from '../models/transaction.model';
 import { Category } from '../models/category.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private baseUrl = '/api';
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
