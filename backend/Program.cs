@@ -25,9 +25,22 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Initialize Firebase Admin SDK
+// Initialize Firebase Admin SDK.
+// Source priority:
+//   1. FIREBASE_SERVICE_ACCOUNT_JSON env var containing base64-encoded JSON (hosted).
+//   2. firebase-service-account.json file on disk (local dev).
+var serviceAccountB64 = Environment.GetEnvironmentVariable("FIREBASE_SERVICE_ACCOUNT_JSON");
 var serviceAccountPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
-if (File.Exists(serviceAccountPath))
+
+if (!string.IsNullOrWhiteSpace(serviceAccountB64))
+{
+    var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(serviceAccountB64));
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromJson(json),
+    });
+}
+else if (File.Exists(serviceAccountPath))
 {
     FirebaseApp.Create(new AppOptions
     {
@@ -36,7 +49,7 @@ if (File.Exists(serviceAccountPath))
 }
 else
 {
-    Console.WriteLine("WARNING: firebase-service-account.json not found. Auth middleware will fail.");
+    Console.WriteLine("WARNING: Firebase credentials missing. Set FIREBASE_SERVICE_ACCOUNT_JSON env var (base64) or place firebase-service-account.json at the app root. Auth middleware will fail.");
 }
 
 var app = builder.Build();
