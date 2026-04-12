@@ -1,0 +1,44 @@
+<div class="form-page">
+  <h1>Add Transaction</h1>
+
+  <form (ngSubmit)="onSubmit()" class="form-card">
+    <div class="form-group">
+      <label for="type">Type</label>
+      <select id="type" [(ngModel)]="form.type" name="type" (ngModelChange)="filterCategories()">
+        <option value="expense">Expense</option>
+        <option value="income">Income</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <input id="description" type="text" [(ngModel)]="form.description" name="description"
+             placeholder="e.g. Grocery shopping" required>
+    </div>
+
+    <div class="form-group">
+      <label for="amount">Amount</label>
+      <input id="amount" type="number" [(ngModel)]="form.amount" name="amount"
+             placeholder="0.00" min="0.01" step="0.01" required>
+    </div>
+
+    <div class="form-group">
+      <label for="category">Category</label>
+      <select id="category" [(ngModel)]="form.category" name="category" required>
+        @for (cat of filteredCategories; track cat.id) {
+          <option [value]="cat.name">{{ cat.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="date">Date</label>
+      <input id="date" type="date" [(ngModel)]="form.date" name="date" required>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="router.navigate(['/transactions'])">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save Transaction</button>
+    </div>
+  </form>
+</div>

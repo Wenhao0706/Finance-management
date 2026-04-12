@@ -1,0 +1,46 @@
+<div class="dashboard">
+  <h1>Dashboard</h1>
+
+  <div class="summary-cards">
+    <div class="card income">
+      <h3>Total Income</h3>
+      <p class="amount">{{ summary.totalIncome | currency }}</p>
+    </div>
+    <div class="card expense">
+      <h3>Total Expenses</h3>
+      <p class="amount">{{ summary.totalExpense | currency }}</p>
+    </div>
+    <div class="card balance" [class.positive]="summary.balance >= 0" [class.negative]="summary.balance < 0">
+      <h3>Balance</h3>
+      <p class="amount">{{ summary.balance | currency }}</p>
+    </div>
+  </div>
+
+  <div class="recent-section">
+    <div class="section-header">
+      <h2>Recent Transactions</h2>
+      <a routerLink="/transactions" class="view-all">View All</a>
+    </div>
+
+    @if (recentTransactions.length === 0) {
+      <p class="empty">No transactions yet. <a routerLink="/transactions/new">Add one!</a></p>
+    } @else {
+      <div class="transaction-list">
+        @for (t of recentTransactions; track t.id) {
+          <div class="transaction-item" [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">
+            <div class="info">
+              <span class="description">{{ t.description }}</span>
+              <span class="category">{{ t.category }}</span>
+            </div>
+            <div class="meta">
+              <span class="amount" [class.positive]="t.type === 'income'" [class.negative]="t.type === 'expense'">
+                {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency }}
+              </span>
+              <span class="date">{{ t.date | date:'mediumDate' }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

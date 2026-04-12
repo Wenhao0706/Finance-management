@@ -1,0 +1,54 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: #1e293b;
+  color: #fff;
+  padding: 1.5rem 0;
+  flex-shrink: 0;
+
+  .brand {
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid #334155;
+
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.nav-links {
+  list-style: none;
+  padding: 1rem 0;
+  margin: 0;
+
+  li a {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.15s;
+
+    &:hover {
+      color: #fff;
+      background: #334155;
+    }
+
+    &.active {
+      color: #fff;
+      background: #3b82f6;
+    }
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  background: #f1f5f9;
+}

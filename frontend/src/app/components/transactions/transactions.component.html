@@ -1,0 +1,48 @@
+<div class="transactions-page">
+  <div class="page-header">
+    <h1>Transactions</h1>
+    <a routerLink="/transactions/new" class="btn btn-primary">+ Add Transaction</a>
+  </div>
+
+  @if (transactions.length === 0) {
+    <div class="empty-state">
+      <p>No transactions found.</p>
+      <a routerLink="/transactions/new">Add your first transaction</a>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th class="text-right">Amount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of transactions; track t.id) {
+            <tr>
+              <td>{{ t.date | date:'mediumDate' }}</td>
+              <td>{{ t.description }}</td>
+              <td>{{ t.category }}</td>
+              <td>
+                <span class="badge" [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">
+                  {{ t.type }}
+                </span>
+              </td>
+              <td class="text-right" [class.positive]="t.type === 'income'" [class.negative]="t.type === 'expense'">
+                {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency }}
+              </td>
+              <td>
+                <button class="btn-icon" title="Delete" (click)="deleteTransaction(t.id)">&#x1F5D1;</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
