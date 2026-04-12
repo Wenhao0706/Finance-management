@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'REPLACE_WITH_HOSTED_BACKEND_URL/api',
+  apiUrl: 'https://finance-management-api.fly.dev/api',
   recaptchaSiteKey: '6LfupLMsAAAAAFpsWljyB8V7uYcmifnGpRPmhVlH',
   firebase: {
     apiKey: 'AIzaSyDekCoHUXjrMsBzh10bXWqD8zANV46D_Lc',
