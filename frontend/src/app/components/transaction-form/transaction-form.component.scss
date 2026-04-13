@@ -57,6 +57,49 @@
   }
 }
 
+.form-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+// Skeleton placeholder shown while categories load — keeps form layout
+// stable so submit button doesn't shift around.
+.select-skeleton {
+  height: 44px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: select-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes select-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .select-skeleton { animation: none; }
+}
+
+// Inline spinner for the submit button while saving
+.btn-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+  margin-right: 0.4rem;
+}
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .btn-spinner { animation: none; border-top-color: currentColor; }
+}
+
 .form-actions {
   display: flex;
   gap: 0.75rem;

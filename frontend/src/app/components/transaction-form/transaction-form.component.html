@@ -1,44 +1,98 @@
 <div class="form-page">
   <h1>Add Transaction</h1>
 
-  <form (ngSubmit)="onSubmit()" class="form-card">
+  <form (ngSubmit)="onSubmit()" class="form-card" #txForm="ngForm" novalidate>
+
+    @if (errorMessage()) {
+      <div class="form-error" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
+    }
+
     <div class="form-group">
-      <label for="type">Type</label>
-      <select id="type" [(ngModel)]="form.type" name="type" (ngModelChange)="filterCategories()">
+      <label for="type" class="required">Type</label>
+      <select id="type" [(ngModel)]="form.type" name="type" (ngModelChange)="filterCategories()" [disabled]="saving()">
         <option value="expense">Expense</option>
         <option value="income">Income</option>
       </select>
     </div>
 
     <div class="form-group">
-      <label for="description">Description</label>
-      <input id="description" type="text" [(ngModel)]="form.description" name="description"
-             placeholder="e.g. Grocery shopping" required>
+      <label for="description" class="required">Description</label>
+      <input
+        id="description"
+        type="text"
+        [(ngModel)]="form.description"
+        name="description"
+        placeholder="e.g. Grocery shopping"
+        autocomplete="off"
+        required
+        maxlength="120"
+        [disabled]="saving()"
+      >
     </div>
 
     <div class="form-group">
-      <label for="amount">Amount</label>
-      <input id="amount" type="number" [(ngModel)]="form.amount" name="amount"
-             placeholder="0.00" min="0.01" step="0.01" required>
+      <label for="amount" class="required">Amount</label>
+      <input
+        id="amount"
+        type="number"
+        [(ngModel)]="form.amount"
+        name="amount"
+        placeholder="0.00"
+        min="0.01"
+        step="0.01"
+        inputmode="decimal"
+        required
+        [disabled]="saving()"
+      >
     </div>
 
     <div class="form-group">
-      <label for="category">Category</label>
-      <select id="category" [(ngModel)]="form.category" name="category" required>
-        @for (cat of filteredCategories; track cat.id) {
-          <option [value]="cat.name">{{ cat.name }}</option>
-        }
-      </select>
+      <label for="category" class="required">Category</label>
+      @if (loadingCategories()) {
+        <div class="select-skeleton" aria-busy="true" aria-label="Loading categories"></div>
+      } @else {
+        <select id="category" [(ngModel)]="form.category" name="category" required [disabled]="saving() || filteredCategories.length === 0">
+          @if (filteredCategories.length === 0) {
+            <option value="" disabled>No categories available</option>
+          }
+          @for (cat of filteredCategories; track cat.id) {
+            <option [value]="cat.name">{{ cat.name }}</option>
+          }
+        </select>
+      }
     </div>
 
     <div class="form-group">
-      <label for="date">Date</label>
-      <input id="date" type="date" [(ngModel)]="form.date" name="date" required>
+      <label for="date" class="required">Date</label>
+      <input
+        id="date"
+        type="date"
+        [(ngModel)]="form.date"
+        name="date"
+        required
+        [disabled]="saving()"
+      >
     </div>
 
     <div class="form-actions">
-      <button type="button" class="btn btn-secondary" (click)="router.navigate(['/transactions'])">Cancel</button>
-      <button type="submit" class="btn btn-primary">Save Transaction</button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="router.navigate(['/transactions'])"
+        [disabled]="saving()"
+      >Cancel</button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="saving() || loadingCategories() || txForm.invalid"
+      >
+        @if (saving()) {
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span>Saving…</span>
+        } @else {
+          <span>Save Transaction</span>
+        }
+      </button>
     </div>
   </form>
 </div>

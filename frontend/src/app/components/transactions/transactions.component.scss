@@ -116,6 +116,23 @@ table {
   }
 }
 
+.error-state {
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  svg { color: #f87171; }
+  h2  { margin: 0; font-size: 1.125rem; color: #0f172a; }
+  p   { margin: 0; font-size: 0.95rem; color: #64748b; }
+  .btn { margin-top: 0.75rem; }
+}
+
 .empty-state {
   background: #fff;
   border-radius: 12px;

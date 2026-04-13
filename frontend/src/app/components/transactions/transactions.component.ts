@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -13,7 +13,8 @@ import { Transaction } from '../../models/transaction.model';
 })
 export class TransactionsComponent implements OnInit {
   transactions: Transaction[] = [];
-  loading = true;
+  loading = signal(true);
+  loadError = signal('');
 
   constructor(private api: ApiService) {}
 
@@ -22,20 +23,27 @@ export class TransactionsComponent implements OnInit {
   }
 
   loadTransactions(): void {
-    this.loading = true;
+    this.loading.set(true);
+    this.loadError.set('');
     this.api.getTransactions().subscribe({
       next: (data) => {
         this.transactions = data;
-        this.loading = false;
+        this.loading.set(false);
       },
-      error: () => {
-        this.loading = false;
+      error: (err) => {
+        this.loading.set(false);
+        const status = err?.status;
+        if (status === 0)        this.loadError.set('Network error — check your connection.');
+        else if (status === 401) this.loadError.set('Your session expired. Please sign in again.');
+        else if (status >= 500)  this.loadError.set('Server error. Try again in a moment.');
+        else                     this.loadError.set('Could not load transactions.');
       },
     });
   }
 
-  // Optimistic delete: remove from the list immediately. If the API call fails,
-  // restore the row at its original position so the user sees the rollback.
+  // Optimistic delete: remove from the list immediately. If the API call
+  // fails, restore the row at its original position so the user sees the
+  // rollback.
   deleteTransaction(t: Transaction): void {
     if (!confirm(`Delete "${t.description}"? This cannot be undone.`)) return;
 
@@ -45,9 +53,6 @@ export class TransactionsComponent implements OnInit {
 
     this.api.deleteTransaction(t.id).subscribe({
       error: () => {
-        // Restore at original position (best-effort — order may have shifted
-        // if the user added something while this was in flight, but that's a
-        // tolerable edge case).
         const restored = [...this.transactions];
         restored.splice(index, 0, t);
         this.transactions = restored;

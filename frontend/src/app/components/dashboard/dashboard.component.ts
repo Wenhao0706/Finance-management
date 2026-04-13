@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -14,16 +14,23 @@ import { Transaction } from '../../models/transaction.model';
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
-  summary: Summary | null = null;        // null while loading — prevents
-  recentTransactions: Transaction[] | null = null;  // empty-state flash
-  loading = true;
+  summary: Summary | null = null;
+  recentTransactions: Transaction[] | null = null;
+  loading = signal(true);
+  loadError = signal('');
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
-    // forkJoin so we flip `loading` only once both endpoints have responded —
-    // avoids a half-rendered dashboard with cards loaded but transactions
-    // blank (or vice versa).
+    this.load();
+  }
+
+  load(): void {
+    this.loading.set(true);
+    this.loadError.set('');
+    // forkJoin so the dashboard renders all-at-once instead of one card at
+    // a time (which looked janky when summary was fast and transactions
+    // were slow).
     forkJoin({
       summary: this.api.getSummary(),
       transactions: this.api.getTransactions(),
@@ -31,10 +38,15 @@ export class DashboardComponent implements OnInit {
       next: ({ summary, transactions }) => {
         this.summary = summary;
         this.recentTransactions = transactions.slice(0, 5);
-        this.loading = false;
+        this.loading.set(false);
       },
-      error: () => {
-        this.loading = false;
+      error: (err) => {
+        this.loading.set(false);
+        const status = err?.status;
+        if (status === 0)        this.loadError.set('Network error — check your connection.');
+        else if (status === 401) this.loadError.set('Your session expired. Please sign in again.');
+        else if (status >= 500)  this.loadError.set('Server error. Try again in a moment.');
+        else                     this.loadError.set('Could not load your dashboard.');
       },
     });
   }

@@ -1,3 +1,20 @@
+@if ((isInitialized$ | async) === false) {
+  <!-- Splash screen — shown while Firebase auth-state-changed is hydrating
+       (typically 200-800ms cold). Without this, the user sees a blank
+       page on first load, which feels broken. -->
+  <div class="app-splash" role="status" aria-live="polite">
+    <div class="app-splash__brand">
+      <div class="app-splash__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </div>
+      <span>FinanceApp</span>
+    </div>
+    <div class="app-splash__spinner" aria-hidden="true"></div>
+  </div>
+}
 @if (isInitialized$ | async) {
   @if (isLoggedIn$ | async) {
     <!-- Email verification banner -->

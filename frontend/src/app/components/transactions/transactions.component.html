@@ -10,7 +10,18 @@
     </a>
   </div>
 
-  @if (loading) {
+  @if (loadError()) {
+    <div class="error-state" role="alert">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <h2>Couldn't load transactions</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="btn btn-primary" (click)="loadTransactions()">Try again</button>
+    </div>
+  } @else if (loading()) {
     <!-- Skeleton table — preserves layout to avoid content jumping -->
     <div class="skeleton-list" aria-live="polite" aria-busy="true">
       @for (_ of [1,2,3,4]; track $index) {
