@@ -8,10 +8,13 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-# Use development env so apiUrl is '/api' (relative) — nginx in the runtime
-# stage proxies /api to the backend container, giving us a same-origin setup
-# (no CORS, no separate api subdomain in the tunnel).
-RUN npx ng build --configuration development
+# Production build: AOT, minified, content-hashed filenames (main-XXXX.js,
+# styles-XXXX.css). Hashed names are why nginx can safely set
+# `Cache-Control: immutable` on assets — every deploy gets new filenames so
+# browsers refetch automatically. (Earlier we used `--configuration development`
+# which emits unhashed `main.js` and made every redeploy require a manual CF
+# cache purge + browser hard-reload.)
+RUN npx ng build --configuration production
 
 # ---- runtime stage ----
 FROM nginx:1.27-alpine AS runtime

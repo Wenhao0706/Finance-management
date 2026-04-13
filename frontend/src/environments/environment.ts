@@ -1,7 +1,9 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.finance.manhou.de/api',
-  recaptchaSiteKey: '6LfupLMsAAAAAFpsWIjyB8V7uYcmifnGpRPmhVIH',
+  // Same-origin: nginx in the frontend container reverse-proxies /api → backend.
+  // (Old value 'https://api.finance.manhou.de/api' pointed to deleted Fly app.)
+  apiUrl: '/api',
+  recaptchaSiteKey: '6LfPl7UsAAAAAAPOXSR-ZGNLeC1CKXwtXa9IKCxH',
   firebase: {
     apiKey: 'AIzaSyDekCoHUXjrMsBzh10bXWqD8zANV46D_Lc',
     authDomain: 'finance-management-10a57.firebaseapp.com',
