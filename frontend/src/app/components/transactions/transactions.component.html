@@ -1,16 +1,40 @@
 <div class="transactions-page">
   <div class="page-header">
     <h1>Transactions</h1>
-    <a routerLink="/transactions/new" class="btn btn-primary">+ Add Transaction</a>
+    <a routerLink="/transactions/new" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Add Transaction</span>
+    </a>
   </div>
 
-  @if (transactions.length === 0) {
+  @if (loading) {
+    <!-- Skeleton table — preserves layout to avoid content jumping -->
+    <div class="skeleton-list" aria-live="polite" aria-busy="true">
+      @for (_ of [1,2,3,4]; track $index) {
+        <div class="skeleton-row">
+          <div class="skeleton-bar w-md"></div>
+          <div class="skeleton-bar w-lg"></div>
+          <div class="skeleton-bar w-sm"></div>
+        </div>
+      }
+    </div>
+  } @else if (transactions.length === 0) {
     <div class="empty-state">
-      <p>No transactions found.</p>
-      <a routerLink="/transactions/new">Add your first transaction</a>
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+        <line x1="9" y1="14" x2="15" y2="14"></line>
+      </svg>
+      <h2>No transactions yet</h2>
+      <p>Track your income and expenses to see your balance.</p>
+      <a routerLink="/transactions/new" class="btn btn-primary">Add your first transaction</a>
     </div>
   } @else {
-    <div class="table-wrapper">
+    <!-- Desktop: table -->
+    <div class="table-wrapper desktop-only">
       <table>
         <thead>
           <tr>
@@ -19,15 +43,15 @@
             <th>Category</th>
             <th>Type</th>
             <th class="text-right">Amount</th>
-            <th>Actions</th>
+            <th class="th-actions"><span class="visually-hidden">Actions</span></th>
           </tr>
         </thead>
         <tbody>
           @for (t of transactions; track t.id) {
             <tr>
-              <td>{{ t.date | date:'mediumDate' }}</td>
-              <td>{{ t.description }}</td>
-              <td>{{ t.category }}</td>
+              <td class="td-date">{{ t.date | date:'mediumDate' }}</td>
+              <td class="td-desc">{{ t.description }}</td>
+              <td class="td-cat">{{ t.category }}</td>
               <td>
                 <span class="badge" [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">
                   {{ t.type }}
@@ -36,13 +60,58 @@
               <td class="text-right" [class.positive]="t.type === 'income'" [class.negative]="t.type === 'expense'">
                 {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency }}
               </td>
-              <td>
-                <button class="btn-icon" title="Delete" (click)="deleteTransaction(t.id)">&#x1F5D1;</button>
+              <td class="td-actions">
+                <button
+                  type="button"
+                  class="btn-icon"
+                  [attr.aria-label]="'Delete ' + t.description"
+                  (click)="deleteTransaction(t)"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                    <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
               </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+
+    <!-- Mobile: cards (cleaner than horizontal-scroll on a 360px screen) -->
+    <ul class="card-list mobile-only" role="list">
+      @for (t of transactions; track t.id) {
+        <li class="tx-card" [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">
+          <div class="tx-card__main">
+            <p class="tx-card__desc">{{ t.description }}</p>
+            <p class="tx-card__sub">
+              <span class="badge" [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">{{ t.type }}</span>
+              <span>· {{ t.category }}</span>
+              <span>· {{ t.date | date:'MMM d' }}</span>
+            </p>
+          </div>
+          <div class="tx-card__right">
+            <span class="tx-card__amount" [class.positive]="t.type === 'income'" [class.negative]="t.type === 'expense'">
+              {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency }}
+            </span>
+            <button
+              type="button"
+              class="btn-icon"
+              [attr.aria-label]="'Delete ' + t.description"
+              (click)="deleteTransaction(t)"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path>
+              </svg>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
   }
 </div>

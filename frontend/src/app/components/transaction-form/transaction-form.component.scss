@@ -2,14 +2,18 @@
   max-width: 560px;
   margin: 0 auto;
 
-  h1 { margin-bottom: 1.5rem; }
+  h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.5rem;
+  }
 }
 
 .form-card {
   background: #fff;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f5f9;
 }
 
 .form-group {
@@ -21,21 +25,34 @@
     font-weight: 500;
     color: #374151;
     margin-bottom: 0.4rem;
+
+    &.required::after {
+      content: ' *';
+      color: #dc2626;
+    }
   }
 
   input, select {
     width: 100%;
-    padding: 0.65rem 0.75rem;
+    padding: 0.7rem 0.85rem;
     border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: 0.95rem;
+    font-size: 1rem;            // 16px — prevents iOS zoom-on-focus
     background: #fff;
+    color: #0f172a;
     box-sizing: border-box;
+    min-height: 44px;           // WCAG touch target
+    transition: border-color 0.15s, box-shadow 0.15s;
 
     &:focus {
       outline: none;
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    &:disabled {
+      background: #f1f5f9;
+      cursor: not-allowed;
     }
   }
 }
@@ -48,22 +65,42 @@
 }
 
 .btn {
-  padding: 0.65rem 1.5rem;
+  padding: 0.7rem 1.5rem;
   border-radius: 8px;
   border: none;
   cursor: pointer;
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  min-height: 44px;
+  transition: background-color 0.15s;
+
+  &:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+  }
 }
 
 .btn-primary {
   background: #3b82f6;
   color: #fff;
   &:hover { background: #2563eb; }
+  &:active { background: #1d4ed8; }
 }
 
 .btn-secondary {
   background: #f1f5f9;
   color: #475569;
   &:hover { background: #e2e8f0; }
+}
+
+@media (max-width: 640px) {
+  .form-card {
+    padding: 1.25rem;
+    border-radius: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;   // primary action on top, more reachable
+    .btn { width: 100%; }
+  }
 }

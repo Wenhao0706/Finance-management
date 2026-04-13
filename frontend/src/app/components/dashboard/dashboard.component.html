@@ -1,46 +1,96 @@
 <div class="dashboard">
   <h1>Dashboard</h1>
 
-  <div class="summary-cards">
-    <div class="card income">
-      <h3>Total Income</h3>
-      <p class="amount">{{ summary.totalIncome | currency }}</p>
+  @if (loading) {
+    <!-- Skeleton state — preserves layout, no content jumping -->
+    <div class="summary-cards" aria-busy="true" aria-live="polite">
+      @for (_ of [1,2,3]; track $index) {
+        <div class="card skeleton-card">
+          <div class="skeleton-bar w-sm"></div>
+          <div class="skeleton-bar w-lg"></div>
+        </div>
+      }
     </div>
-    <div class="card expense">
-      <h3>Total Expenses</h3>
-      <p class="amount">{{ summary.totalExpense | currency }}</p>
+    <div class="skeleton-bar w-section" style="margin-bottom: 1rem;"></div>
+    <div class="transaction-list">
+      @for (_ of [1,2,3]; track $index) {
+        <div class="transaction-item skeleton-tx">
+          <div class="skeleton-bar w-md"></div>
+          <div class="skeleton-bar w-sm"></div>
+        </div>
+      }
     </div>
-    <div class="card balance" [class.positive]="summary.balance >= 0" [class.negative]="summary.balance < 0">
-      <h3>Balance</h3>
-      <p class="amount">{{ summary.balance | currency }}</p>
-    </div>
-  </div>
-
-  <div class="recent-section">
-    <div class="section-header">
-      <h2>Recent Transactions</h2>
-      <a routerLink="/transactions" class="view-all">View All</a>
-    </div>
-
-    @if (recentTransactions.length === 0) {
-      <p class="empty">No transactions yet. <a routerLink="/transactions/new">Add one!</a></p>
-    } @else {
-      <div class="transaction-list">
-        @for (t of recentTransactions; track t.id) {
-          <div class="transaction-item" [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">
-            <div class="info">
-              <span class="description">{{ t.description }}</span>
-              <span class="category">{{ t.category }}</span>
-            </div>
-            <div class="meta">
-              <span class="amount" [class.positive]="t.type === 'income'" [class.negative]="t.type === 'expense'">
-                {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency }}
-              </span>
-              <span class="date">{{ t.date | date:'mediumDate' }}</span>
-            </div>
+  } @else {
+    <div class="summary-cards">
+      <div class="card income">
+        <div class="card-header">
+          <h3>Total Income</h3>
+          <div class="card-icon income-bg" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
           </div>
-        }
+        </div>
+        <p class="amount">{{ summary?.totalIncome | currency }}</p>
       </div>
-    }
-  </div>
+
+      <div class="card expense">
+        <div class="card-header">
+          <h3>Total Expenses</h3>
+          <div class="card-icon expense-bg" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </div>
+        </div>
+        <p class="amount">{{ summary?.totalExpense | currency }}</p>
+      </div>
+
+      <div class="card balance" [class.positive]="(summary?.balance ?? 0) >= 0" [class.negative]="(summary?.balance ?? 0) < 0">
+        <div class="card-header">
+          <h3>Balance</h3>
+          <div class="card-icon balance-bg" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="6" width="20" height="13" rx="2"></rect>
+              <line x1="2" y1="11" x2="22" y2="11"></line>
+            </svg>
+          </div>
+        </div>
+        <p class="amount">{{ summary?.balance | currency }}</p>
+      </div>
+    </div>
+
+    <div class="recent-section">
+      <div class="section-header">
+        <h2>Recent Transactions</h2>
+        <a routerLink="/transactions" class="view-all">View all →</a>
+      </div>
+
+      @if ((recentTransactions?.length ?? 0) === 0) {
+        <div class="empty">
+          <p>No transactions yet.</p>
+          <a routerLink="/transactions/new" class="btn-link">+ Add your first transaction</a>
+        </div>
+      } @else {
+        <div class="transaction-list">
+          @for (t of recentTransactions; track t.id) {
+            <div class="transaction-item" [class.income]="t.type === 'income'" [class.expense]="t.type === 'expense'">
+              <div class="info">
+                <span class="description">{{ t.description }}</span>
+                <span class="category">{{ t.category }}</span>
+              </div>
+              <div class="meta">
+                <span class="amount" [class.positive]="t.type === 'income'" [class.negative]="t.type === 'expense'">
+                  {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency }}
+                </span>
+                <span class="date">{{ t.date | date:'MMM d' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
 </div>
