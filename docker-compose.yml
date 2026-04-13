@@ -7,9 +7,10 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (see .env.example)}"
       POSTGRES_DB: financemanagement
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"   # bind loopback only — don't expose Postgres to LAN
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d financemanagement"]
       interval: 5s
@@ -27,11 +28,45 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=financemanagement;Username=postgres;Password=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}"
-      Cors__AllowedOrigins__0: "http://localhost:4200"
+      # Same-origin via nginx proxy, plus localhost:4200 for ng serve dev workflow.
+      Cors__AllowedOrigins__0: "http://localhost"
+      Cors__AllowedOrigins__1: "http://localhost:4200"
+      Cors__AllowedOrigins__2: "https://finance.manhou.de"
     ports:
-      - "5143:8080"
+      - "127.0.0.1:5143:8080"   # loopback only — public traffic enters via nginx → frontend container
     volumes:
       - ./backend/firebase-service-account.json:/app/firebase-service-account.json:ro
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: finance-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8081:80"               # local-LAN access port; tunnel reaches container directly via Docker network
+    restart: unless-stopped
+
+  # Cloudflare Tunnel — exposes the frontend container to the public internet
+  # over an outbound-only encrypted connection. No port forwarding needed.
+  #
+  # Modes:
+  #   QUICK (default below): random *.trycloudflare.com URL, no Cloudflare account.
+  #     Look at `docker logs finance-tunnel` for the URL after `up`.
+  #   NAMED tunnel: set CLOUDFLARE_TUNNEL_TOKEN in .env (created in Cloudflare
+  #     dashboard → Zero Trust → Networks → Tunnels) and replace the `command:`
+  #     line with: `tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}`.
+  #     This routes finance.manhou.de (or any hostname you configure in the
+  #     dashboard) to http://frontend:80.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: finance-tunnel
+    depends_on:
+      - frontend
+    command: tunnel --no-autoupdate --url http://frontend:80
+    restart: unless-stopped
 
 volumes:
   postgres-data:
