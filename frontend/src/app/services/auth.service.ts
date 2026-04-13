@@ -26,6 +26,14 @@ export class AuthService {
   // undefined = not yet initialized, null = no user, User = logged in
   private currentUserSubject = new BehaviorSubject<User | null | undefined>(undefined);
 
+  // Suppress emissions to currentUser$ during multi-step flows like
+  // register() where Firebase briefly authenticates a user that we're
+  // about to sign out. Without this, the app shell flashes the logged-in
+  // layout (sidebar, dashboard) for ~1s while register() is still
+  // running profile-update + send-verification + signout — looks like a
+  // duplicated screen to the user.
+  private suppressAuthEmit = false;
+
   currentUser$: Observable<User | null | undefined> = this.currentUserSubject.asObservable();
 
   private firebaseErrors: Record<string, string> = {
@@ -47,6 +55,9 @@ export class AuthService {
     this.auth = getAuth(this.app);
 
     onAuthStateChanged(this.auth, (user) => {
+      // Skip emitting transient auth states during register() — see
+      // suppressAuthEmit declaration above.
+      if (this.suppressAuthEmit) return;
       this.ngZone.run(() => {
         this.currentUserSubject.next(user);
       });
@@ -54,10 +65,20 @@ export class AuthService {
   }
 
   async register(email: string, password: string, fullName: string): Promise<void> {
-    const credential = await createUserWithEmailAndPassword(this.auth, email, password);
-    await updateProfile(credential.user, { displayName: fullName });
-    await sendEmailVerification(credential.user);
-    await signOut(this.auth);
+    this.suppressAuthEmit = true;
+    try {
+      const credential = await createUserWithEmailAndPassword(this.auth, email, password);
+      await updateProfile(credential.user, { displayName: fullName });
+      await sendEmailVerification(credential.user);
+      await signOut(this.auth);
+    } finally {
+      this.suppressAuthEmit = false;
+      // Manually emit the final state (signed out) since we suppressed
+      // the intermediate callbacks above.
+      this.ngZone.run(() => {
+        this.currentUserSubject.next(this.auth.currentUser);
+      });
+    }
   }
 
   async login(email: string, password: string): Promise<void> {
