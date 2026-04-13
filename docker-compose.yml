@@ -65,7 +65,14 @@ services:
     container_name: finance-tunnel
     depends_on:
       - frontend
-    command: tunnel --no-autoupdate --url http://frontend:80
+    # NAMED tunnel (recommended). Token is created in Cloudflare dashboard
+    # → Zero Trust → Networks → Tunnels and stored in .env (gitignored).
+    # The cloudflared image has no shell, so we pass args directly.
+    #
+    # To temporarily switch to a QUICK tunnel (random *.trycloudflare.com URL,
+    # no Cloudflare account needed), comment out `command:` below and use:
+    #   command: tunnel --no-autoupdate --url http://frontend:80
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN must be set in .env}
     restart: unless-stopped
 
 volumes:
