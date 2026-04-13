@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   apiUrl: '/api',
-  recaptchaSiteKey: '6LfupLMsAAAAAFpsWljyB8V7uYcmifnGpRPmhVlH',
+  recaptchaSiteKey: '6LfupLMsAAAAAFpsWIjyB8V7uYcmifnGpRPmhVIH',
   firebase: {
     apiKey: 'AIzaSyDekCoHUXjrMsBzh10bXWqD8zANV46D_Lc',
     authDomain: 'finance-management-10a57.firebaseapp.com',
