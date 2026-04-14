@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using FinanceManagement.API.Data;
 using FinanceManagement.API.Middleware;
+using FinanceManagement.API.Services;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 
@@ -96,6 +97,32 @@ else
     Console.WriteLine("WARNING: Firebase credentials missing. Set FIREBASE_SERVICE_ACCOUNT_JSON env var (base64) or place firebase-service-account.json at the app root. Auth middleware will fail.");
 }
 
+// App Check wiring — only registered when the project number and app ID are
+// known. Without them the middleware is skipped entirely so existing deploys
+// don't break on rollout. Add APPCHECK_ENFORCE=true once logs show no
+// false positives.
+var firebaseProjectNumber = Environment.GetEnvironmentVariable("FIREBASE_PROJECT_NUMBER")
+    ?? builder.Configuration["Firebase:ProjectNumber"];
+var firebaseAppId = Environment.GetEnvironmentVariable("FIREBASE_APP_ID")
+    ?? builder.Configuration["Firebase:AppId"];
+var appCheckConfigured = !string.IsNullOrWhiteSpace(firebaseProjectNumber)
+    && !string.IsNullOrWhiteSpace(firebaseAppId);
+
+if (appCheckConfigured)
+{
+    builder.Services.AddHttpClient();
+    builder.Services.AddSingleton<IAppCheckTokenVerifier>(sp =>
+        new AppCheckTokenVerifier(
+            firebaseProjectNumber!,
+            firebaseAppId!,
+            sp.GetRequiredService<IHttpClientFactory>(),
+            sp.GetRequiredService<ILogger<AppCheckTokenVerifier>>()));
+}
+else
+{
+    Console.WriteLine("INFO: App Check not configured (FIREBASE_PROJECT_NUMBER and/or FIREBASE_APP_ID missing). Skipping App Check middleware.");
+}
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -112,6 +139,10 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
 app.UseMiddleware<FirebaseAuthMiddleware>();
+if (appCheckConfigured)
+{
+    app.UseMiddleware<AppCheckMiddleware>();
+}
 app.UseRateLimiter();
 
 // Public liveness probe — no auth, no rate limit, no timestamp (timestamps leak server time

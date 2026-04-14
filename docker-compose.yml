@@ -32,6 +32,12 @@ services:
       Cors__AllowedOrigins__0: "http://localhost"
       Cors__AllowedOrigins__1: "http://localhost:4200"
       Cors__AllowedOrigins__2: "https://finance.manhou.de"
+      # App Check verification (optional — middleware is skipped if either value is blank).
+      # Rollout plan: ship with APPCHECK_ENFORCE=false, monitor backend logs for 48h,
+      # then flip to true to start rejecting requests without a valid attestation.
+      FIREBASE_PROJECT_NUMBER: "${FIREBASE_PROJECT_NUMBER:-}"
+      FIREBASE_APP_ID: "${FIREBASE_APP_ID:-}"
+      APPCHECK_ENFORCE: "${APPCHECK_ENFORCE:-false}"
     ports:
       - "127.0.0.1:5143:8080"   # loopback only — public traffic enters via nginx → frontend container
     volumes:

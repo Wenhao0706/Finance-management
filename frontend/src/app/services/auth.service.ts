@@ -2,7 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { initializeAppCheck, AppCheck, ReCaptchaV3Provider, getToken } from 'firebase/app-check';
 import {
   getAuth,
   Auth,
@@ -22,6 +22,7 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private app: FirebaseApp;
+  private appCheck: AppCheck;
   private auth: Auth;
   // undefined = not yet initialized, null = no user, User = logged in
   private currentUserSubject = new BehaviorSubject<User | null | undefined>(undefined);
@@ -47,7 +48,7 @@ export class AuthService {
   constructor(private router: Router, private ngZone: NgZone) {
     this.app = initializeApp(environment.firebase);
 
-    initializeAppCheck(this.app, {
+    this.appCheck = initializeAppCheck(this.app, {
       provider: new ReCaptchaV3Provider(environment.recaptchaSiteKey),
       isTokenAutoRefreshEnabled: true,
     });
@@ -105,6 +106,20 @@ export class AuthService {
     const user = this.auth.currentUser;
     if (!user) return null;
     return user.getIdToken();
+  }
+
+  // Returns the current App Check token (reCAPTCHA v3 attestation proving
+  // the request came from the real app). Attached to every outbound API call
+  // via the auth interceptor. Returns null if App Check can't produce a token
+  // (offline, reCAPTCHA blocked by ad-blocker, etc.) — the backend rejects
+  // missing tokens only in enforce mode.
+  async getAppCheckToken(): Promise<string | null> {
+    try {
+      const tokenResult = await getToken(this.appCheck, /* forceRefresh */ false);
+      return tokenResult.token;
+    } catch {
+      return null;
+    }
   }
 
   getErrorMessage(error: unknown): string {
