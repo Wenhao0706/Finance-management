@@ -1,3 +1,5 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using FinanceManagement.API.Data;
 using FinanceManagement.API.Middleware;
@@ -8,6 +10,48 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+// Rate limiter — partition by Firebase UID when authenticated, fall back to
+// client IP (prefer X-Forwarded-For since we sit behind nginx + Cloudflare Tunnel).
+// Global default covers reads; named "writes" policy is applied via
+// [EnableRateLimiting("writes")] on POST/PUT/DELETE endpoints.
+static string ResolvePartitionKey(HttpContext ctx)
+{
+    var uid = ctx.User.FindFirst("firebase_uid")?.Value;
+    if (!string.IsNullOrEmpty(uid)) return $"uid:{uid}";
+
+    var forwarded = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+    if (!string.IsNullOrWhiteSpace(forwarded))
+    {
+        return $"ip:{forwarded.Split(',')[0].Trim()}";
+    }
+
+    return $"ip:{ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+}
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = 429;
+    options.OnRejected = (context, _) =>
+    {
+        context.HttpContext.Response.Headers["Retry-After"] = "60";
+        return ValueTask.CompletedTask;
+    };
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(ResolvePartitionKey(ctx), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 300,
+            Window = TimeSpan.FromMinutes(1),
+        }));
+
+    options.AddPolicy("writes", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(ResolvePartitionKey(ctx), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+        }));
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -68,8 +112,11 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
 app.UseMiddleware<FirebaseAuthMiddleware>();
+app.UseRateLimiter();
 
-app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }));
+// Public liveness probe — no auth, no rate limit, no timestamp (timestamps leak server time
+// and aren't needed for orchestration health checks).
+app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 
 app.MapControllers();
 

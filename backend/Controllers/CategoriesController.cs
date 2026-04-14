@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using FinanceManagement.API.Data;
 using FinanceManagement.API.Models;
@@ -27,6 +28,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
+    [EnableRateLimiting("writes")]
     public async Task<ActionResult<Category>> Create(Category category)
     {
         _db.Categories.Add(category);

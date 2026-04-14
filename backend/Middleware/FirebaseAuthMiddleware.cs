@@ -7,7 +7,7 @@ public class FirebaseAuthMiddleware
 {
     private static readonly string[] PublicPathPrefixes =
     {
-        "/health",
+        "/healthz",
         "/openapi",
         "/swagger",
     };

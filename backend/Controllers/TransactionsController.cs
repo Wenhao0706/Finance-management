@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using FinanceManagement.API.Data;
 using FinanceManagement.API.Models;
@@ -39,6 +40,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost]
+    [EnableRateLimiting("writes")]
     public async Task<ActionResult<Transaction>> Create(Transaction transaction)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -51,6 +53,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [EnableRateLimiting("writes")]
     public async Task<IActionResult> Update(int id, Transaction transaction)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -72,6 +75,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [EnableRateLimiting("writes")]
     public async Task<IActionResult> Delete(int id)
     {
         if (CurrentUserId is null) return Unauthorized();
