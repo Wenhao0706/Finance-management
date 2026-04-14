@@ -42,3 +42,6 @@ AGENTS.md
 Thumbs.db
 .DS_Store
 .gitnexus
+
+# Internal planning docs and specs — AI-assisted design artifacts, kept local only
+docs/superpowers/
