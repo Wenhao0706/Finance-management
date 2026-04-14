@@ -21,6 +21,11 @@ h1, h2, h3, h4 { margin-top: 0; }
   border-radius: 4px;
 }
 
+// Reduced-motion safeguard — crushes animations + transitions globally so
+// parallax and scroll-jacking don't cause vestibular discomfort. Small
+// bounded loading indicators are explicitly carved out below: users need
+// the universally-recognized "spinning = loading" signal, and a 32px
+// contained rotation doesn't trigger motion sensitivity per WAI guidance.
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -28,4 +33,32 @@ h1, h2, h3, h4 { margin-top: 0; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  // Loading indicators: keep animating, just slower. Preserves the
+  // animation names + keyframes defined in each component; only the
+  // wildcard's aggressive duration/iteration-count overrides are reversed
+  // here so spinners and skeleton shimmers remain visibly active.
+  //
+  // Covered indicators:
+  //   .app-splash__spinner   — app-shell bootstrap splash
+  //   .skeleton-bar          — dashboard / transactions row placeholders
+  //   .select-skeleton       — transaction-form category dropdown placeholder
+  //   .btn-spinner           — submit-button loading state
+  .app-splash__spinner,
+  .skeleton-bar,
+  .select-skeleton,
+  .btn-spinner {
+    animation-duration: 2s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+// Cross-tab safety net — if Firebase syncs an auth session from another tab
+// before the LoginComponent's redirect completes, the template briefly
+// renders LoginComponent inside the authenticated shell (sidebar + login
+// branding side-by-side). Hide the login component whenever it's nested
+// under the authenticated layout; the guestGuard + LoginComponent's
+// ngOnInit redirect will unmount it within the same turn.
+.app-layout app-login {
+  display: none;
 }

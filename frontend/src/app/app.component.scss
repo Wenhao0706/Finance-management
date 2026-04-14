@@ -211,9 +211,9 @@ $z-toast: 70;
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) {
-  .app-splash__spinner { animation: none; border-top-color: #3b82f6; }
-}
+// Reduced-motion handling lives in global styles.scss — the spinner still
+// spins, just slower, so users get the expected "loading" signal without
+// a vestibular trigger. Fade-only alternatives violate user mental model.
 
 .verify-banner {
   background: #fef3c7;

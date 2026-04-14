@@ -1,6 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 
 type ViewMode = 'login' | 'register' | 'forgot-password';
@@ -12,7 +14,9 @@ type ViewMode = 'login' | 'register' | 'forgot-password';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit, OnDestroy {
+  private authSub?: Subscription;
+
   viewMode = signal<ViewMode>('login');
   loading = signal(false);
   errorMessage = signal('');
@@ -79,7 +83,25 @@ export class LoginComponent {
   // Forgot password fields
   forgotEmail = '';
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    // Cross-tab safety net: if the user signs in (or is already signed in) from
+    // another tab, Firebase syncs the session via localStorage and fires
+    // onAuthStateChanged here too. Without this redirect, the app-root template
+    // flips to the authenticated branch while our router is still on /login —
+    // user sees the sidebar alongside the split-panel login layout ("duplicated
+    // left panel"). Navigating away unmounts us and the shell looks right.
+    this.authSub = this.authService.currentUser$.subscribe((user) => {
+      if (user) {
+        this.router.navigate(['/dashboard']);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.authSub?.unsubscribe();
+  }
 
   setView(mode: ViewMode): void {
     this.viewMode.set(mode);
