@@ -369,3 +369,71 @@
   font-size: 0.9rem;
   margin-top: 1.5rem;
 }
+
+// --- Password strength meter (register form) ---
+.strength-meter {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+
+  .strength-bar {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.2s ease, background-color 0.2s ease;
+    }
+
+    &[data-strength='empty']::after  { width: 0%;   background: transparent; }
+    &[data-strength='weak']::after   { width: 25%;  background: #dc2626; }
+    &[data-strength='fair']::after   { width: 50%;  background: #f59e0b; }
+    &[data-strength='good']::after   { width: 75%;  background: #0ea5e9; }
+    &[data-strength='strong']::after { width: 100%; background: #16a34a; }
+  }
+
+  .strength-label {
+    margin: 0.4rem 0 0.25rem;
+    color: #475569;
+
+    strong { text-transform: capitalize; color: #1e293b; }
+  }
+
+  .strength-rules {
+    list-style: none;
+    padding: 0;
+    margin: 0.3rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.15rem 0.75rem;
+    color: #64748b;
+
+    li {
+      position: relative;
+      padding-left: 1.1rem;
+
+      &::before {
+        content: '○';
+        position: absolute;
+        left: 0;
+        color: #cbd5e1;
+        font-size: 0.85em;
+      }
+
+      &.met {
+        color: #15803d;
+        &::before { content: '✓'; color: #16a34a; font-weight: 700; }
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strength-meter .strength-bar::after { transition: none; }
+}

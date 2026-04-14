@@ -225,6 +225,21 @@
             @if (regPasswordField.touched && regPasswordField.errors) {
               <span id="reg-password-error" class="field-error" role="alert">Password must be at least 8 characters.</span>
             }
+            @if (registerPassword().length > 0) {
+              <div class="strength-meter" aria-live="polite">
+                <div class="strength-bar" [attr.data-strength]="passwordStrength()"></div>
+                <div class="strength-label">
+                  Strength: <strong>{{ passwordStrength() }}</strong>
+                </div>
+                <ul class="strength-rules">
+                  <li [class.met]="passwordChecks().length">8–128 characters</li>
+                  <li [class.met]="passwordChecks().upper">Uppercase letter</li>
+                  <li [class.met]="passwordChecks().lower">Lowercase letter</li>
+                  <li [class.met]="passwordChecks().digit">Number</li>
+                  <li [class.met]="passwordChecks().symbol">Symbol</li>
+                </ul>
+              </div>
+            }
           </div>
 
           <div class="field">

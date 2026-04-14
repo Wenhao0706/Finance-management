@@ -39,6 +39,43 @@ export class LoginComponent {
     return confirm.length > 0 && this.registerPassword() !== confirm;
   });
 
+  // Password complexity — live rules driving the strength meter and the
+  // submit gate. Rule set: length 8-128 + at least three of {upper, lower,
+  // digit, symbol}. Matches what Firebase Identity Platform enforces on
+  // the server when the password policy is configured in the console, so
+  // a client rejection here means the backend would have rejected too.
+  readonly passwordChecks = computed(() => {
+    const pw = this.registerPassword();
+    return {
+      length: pw.length >= 8 && pw.length <= 128,
+      upper: /[A-Z]/.test(pw),
+      lower: /[a-z]/.test(pw),
+      digit: /[0-9]/.test(pw),
+      symbol: /[^A-Za-z0-9]/.test(pw),
+    };
+  });
+
+  readonly passwordCharClassCount = computed(() => {
+    const c = this.passwordChecks();
+    return [c.upper, c.lower, c.digit, c.symbol].filter(Boolean).length;
+  });
+
+  readonly passwordStrength = computed((): 'empty' | 'weak' | 'fair' | 'good' | 'strong' => {
+    const pw = this.registerPassword();
+    if (pw.length === 0) return 'empty';
+    const c = this.passwordChecks();
+    const classes = this.passwordCharClassCount();
+    if (!c.length || classes <= 1) return 'weak';
+    if (classes === 2) return 'fair';
+    if (classes === 3) return 'good';
+    return 'strong';
+  });
+
+  readonly passwordMeetsPolicy = computed(() => {
+    const c = this.passwordChecks();
+    return c.length && this.passwordCharClassCount() >= 3;
+  });
+
   // Forgot password fields
   forgotEmail = '';
 
@@ -77,6 +114,10 @@ export class LoginComponent {
   async onRegister(): Promise<void> {
     this.errorMessage.set('');
 
+    if (!this.passwordMeetsPolicy()) {
+      this.errorMessage.set('Password must be 8–128 characters and mix at least three of: uppercase, lowercase, numbers, symbols.');
+      return;
+    }
     if (this.passwordsMismatch()) {
       this.errorMessage.set('Passwords do not match.');
       return;
