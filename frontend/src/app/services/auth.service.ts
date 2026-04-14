@@ -19,6 +19,19 @@ import {
 } from 'firebase/auth';
 import { environment } from '../../environments/environment';
 
+interface LockoutDecision {
+  isLocked: boolean;
+  retryAfterSeconds: number;
+  failedAttemptsInWindow: number;
+}
+
+class LockoutError extends Error {
+  readonly code = 'app/locked';
+  constructor(public readonly retryAfterSeconds: number) {
+    super('Too many failed attempts.');
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private app: FirebaseApp;
@@ -83,8 +96,58 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<void> {
-    await signInWithEmailAndPassword(this.auth, email, password);
-    this.ngZone.run(() => this.router.navigate(['/dashboard']));
+    // Pre-check the backend's progressive lockout before hitting Firebase —
+    // saves a Firebase round-trip when we already know the user is locked,
+    // and gives us a precise countdown to show in the UI.
+    const lockout = await this.checkLockout(email);
+    if (lockout.isLocked) {
+      throw new LockoutError(lockout.retryAfterSeconds);
+    }
+
+    try {
+      await signInWithEmailAndPassword(this.auth, email, password);
+      // Fire-and-forget: report success but don't block navigation on it.
+      void this.reportAuthEvent(email, true);
+      this.ngZone.run(() => this.router.navigate(['/dashboard']));
+    } catch (error) {
+      const code = (error && typeof error === 'object' && 'code' in error)
+        ? (error as { code: string }).code
+        : null;
+      void this.reportAuthEvent(email, false, code);
+      throw error;
+    }
+  }
+
+  // Best-effort backend calls. If the lockout API is unreachable we fall
+  // through to the Firebase attempt — the user shouldn't be locked out of
+  // their app because our backend hiccupped. Firebase's own throttling
+  // (auth/too-many-requests) is still the underlying brute-force defense.
+  private async checkLockout(email: string): Promise<LockoutDecision> {
+    try {
+      const response = await fetch(
+        `${environment.apiUrl}/auth-events/check?email=${encodeURIComponent(email.trim())}`,
+      );
+      if (!response.ok) return { isLocked: false, retryAfterSeconds: 0, failedAttemptsInWindow: 0 };
+      return await response.json();
+    } catch {
+      return { isLocked: false, retryAfterSeconds: 0, failedAttemptsInWindow: 0 };
+    }
+  }
+
+  private async reportAuthEvent(email: string, success: boolean, errorCode?: string | null): Promise<void> {
+    try {
+      await fetch(`${environment.apiUrl}/auth-events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          success,
+          errorCode: errorCode ?? null,
+        }),
+      });
+    } catch {
+      // Silently swallow — telemetry shouldn't break the login flow.
+    }
   }
 
   async loginWithGoogle(): Promise<void> {
@@ -123,11 +186,20 @@ export class AuthService {
   }
 
   getErrorMessage(error: unknown): string {
+    if (error instanceof LockoutError) {
+      return `Too many failed attempts. Please wait ${this.formatRetry(error.retryAfterSeconds)} before trying again.`;
+    }
     if (error && typeof error === 'object' && 'code' in error) {
       const code = (error as { code: string }).code;
       if (code === 'auth/popup-closed-by-user') return '';
       return this.firebaseErrors[code] || 'Something went wrong. Please try again.';
     }
     return 'Something went wrong. Please try again.';
+  }
+
+  private formatRetry(seconds: number): string {
+    if (seconds < 60) return `${seconds} second${seconds === 1 ? '' : 's'}`;
+    const minutes = Math.ceil(seconds / 60);
+    return `${minutes} minute${minutes === 1 ? '' : 's'}`;
   }
 }

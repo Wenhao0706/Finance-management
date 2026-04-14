@@ -10,6 +10,7 @@ public class FirebaseAuthMiddleware
         "/healthz",
         "/openapi",
         "/swagger",
+        "/api/auth-events",  // anonymous lockout tracking — see AuthEventsController
     };
 
     private readonly RequestDelegate _next;

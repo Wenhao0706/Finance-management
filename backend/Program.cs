@@ -52,7 +52,26 @@ builder.Services.AddRateLimiter(options =>
             PermitLimit = 30,
             Window = TimeSpan.FromMinutes(1),
         }));
+
+    // Anonymous lockout-tracking endpoints. Strict per-IP cap because anyone
+    // can hit them — without rate limiting, an attacker could flood
+    // /api/auth-events with bogus events to grow the LoginAttempts table.
+    options.AddPolicy("authEvents", ctx =>
+    {
+        var fwd = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        var ip = !string.IsNullOrWhiteSpace(fwd)
+            ? fwd.Split(',')[0].Trim()
+            : ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter($"ip:{ip}", _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+        });
+    });
 });
+
+builder.Services.AddScoped<ILockoutService, LockoutService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

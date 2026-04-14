@@ -21,6 +21,7 @@ public class AppCheckMiddleware
         "/healthz",
         "/openapi",
         "/swagger",
+        "/api/auth-events",  // pre-login lockout tracking — App Check token may not be ready yet
     };
 
     private readonly RequestDelegate _next;

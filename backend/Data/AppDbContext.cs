@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,6 +19,17 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Transaction>()
             .HasIndex(t => new { t.UserId, t.Date });
+
+        modelBuilder.Entity<LoginAttempt>()
+            .Property(a => a.Email)
+            .HasMaxLength(254);  // RFC 5321 max email length
+
+        modelBuilder.Entity<LoginAttempt>()
+            .Property(a => a.IpAddress)
+            .HasMaxLength(45);   // IPv6 textual max
+
+        modelBuilder.Entity<LoginAttempt>()
+            .HasIndex(a => new { a.Email, a.IpAddress, a.AttemptedAt });
 
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Salary", Type = "income", Icon = "payments" },
