@@ -33,8 +33,7 @@ public class FirebaseAuthMiddleware
 
         if (authHeader is null || !authHeader.StartsWith("Bearer "))
         {
-            context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("Missing or invalid Authorization header.");
+            await WriteUnauthorizedAsync(context);
             return;
         }
 
@@ -56,8 +55,15 @@ public class FirebaseAuthMiddleware
         }
         catch (FirebaseAuthException)
         {
-            context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("Invalid or expired token.");
+            await WriteUnauthorizedAsync(context);
         }
+    }
+
+    // Generic 401 — never reveal whether the header was missing, malformed, or the token was bad.
+    // Discriminating helps attackers probe the auth mechanism.
+    private static Task WriteUnauthorizedAsync(HttpContext context)
+    {
+        context.Response.StatusCode = 401;
+        return context.Response.WriteAsync("Authentication required.");
     }
 }
