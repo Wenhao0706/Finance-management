@@ -34,7 +34,11 @@ public class AppCheckTokenVerifier : IAppCheckTokenVerifier
     private readonly string _expectedIssuer;
     private readonly string _expectedAudience;
     private readonly string _expectedAppId;
-    private readonly JwtSecurityTokenHandler _handler = new();
+    // MapInboundClaims = false stops the handler from renaming standard JWT
+    // claims to their legacy WS-Security URIs (e.g. 'sub' → ClaimTypes.NameIdentifier).
+    // Without this, principal.FindFirst("sub") returns empty and every App Check
+    // token fails with app_id_mismatch:got=''.
+    private readonly JwtSecurityTokenHandler _handler = new() { MapInboundClaims = false };
     private readonly ILogger<AppCheckTokenVerifier> _logger;
 
     public AppCheckTokenVerifier(
