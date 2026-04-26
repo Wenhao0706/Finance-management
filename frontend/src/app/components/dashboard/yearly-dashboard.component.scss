@@ -1,92 +1,201 @@
 .yearly-dashboard {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 1.5rem 1rem;
+  padding: 0.5rem 0;
 
+  .page-title {
+    font-size: var(--font-size-2xl);
+    margin: 0 0 1.25rem;
+    color: var(--color-text);
+    letter-spacing: -0.015em;
+  }
+
+  // Period switcher (mirrors monthly dashboard for visual consistency)
   .period-nav {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
     gap: 0.75rem;
+    padding: 0.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
     margin-bottom: 1.5rem;
 
     .nav-btn {
-      background: transparent;
-      border: 1px solid var(--border, #e5e5e5);
-      border-radius: 6px;
-      padding: 0.4rem 0.7rem;
+      width: var(--touch-target-min);
+      height: var(--touch-target-min);
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-divider);
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      font-size: 0.9rem;
-      color: var(--text, #333);
-      &:hover { background: var(--hover, #f5f5f5); }
+      color: var(--color-text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition-fast), border-color var(--transition-fast);
+
+      &:hover { background: var(--color-surface-sunk); border-color: var(--color-border); }
     }
 
     .period-label {
-      flex: 1;
       text-align: center;
-      margin: 0;
-      font-size: 1.25rem;
+      .period-eyebrow {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: var(--weight-semibold);
+      }
+      .period-month {
+        margin: 0;
+        font-size: var(--font-size-xl);
+        font-weight: var(--weight-bold);
+        color: var(--color-text);
+        letter-spacing: -0.01em;
+      }
     }
 
     .month-toggle {
-      background: var(--accent, #2563eb);
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 1rem;
+      height: var(--touch-target-min);
+      background: var(--color-primary);
+      color: var(--color-text-on-dark);
       border: none;
-      border-radius: 6px;
-      padding: 0.4rem 0.9rem;
+      border-radius: var(--radius-sm);
+      font-weight: var(--weight-semibold);
+      font-size: var(--font-size-sm);
       cursor: pointer;
-      font-size: 0.9rem;
-      &:hover { background: #1d4ed8; }
+      transition: background var(--transition-fast);
+      &:hover { background: var(--color-primary-hover); }
     }
   }
 
-  .loading, .error {
-    padding: 2rem;
-    text-align: center;
-    color: var(--text-muted, #666);
+  .state-msg {
+    padding: 1rem 1.25rem;
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-divider);
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    &.error {
+      background: var(--color-negative-soft);
+      border-color: #fca5a5;
+      color: var(--color-negative-strong);
+    }
   }
-  .error { color: #c62828; }
 
   .months-card {
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border, #e5e5e5);
-    border-radius: 8px;
-    padding: 1.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
 
-    h3 {
-      margin: 0 0 0.75rem 0;
-      font-size: 1rem;
-      color: var(--text-muted, #666);
+    .card-head {
+      padding: 1.25rem 1.5rem 0.5rem;
+      h3 {
+        margin: 0 0 0.3rem;
+        font-size: var(--font-size-lg);
+        color: var(--color-text);
+      }
+      .card-sub {
+        margin: 0;
+        color: var(--color-text-muted);
+        font-size: var(--font-size-sm);
+      }
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .month-list {
+      list-style: none;
+      padding: 0.5rem 0 0;
+      margin: 0;
+    }
 
-      th {
-        text-align: left;
-        padding: 0.5rem 0.75rem;
-        color: var(--text-muted, #666);
-        font-weight: 500;
-        font-size: 0.85rem;
-        border-bottom: 1px solid var(--border, #e5e5e5);
+    .month-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 0.85fr) 3fr auto auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--color-divider);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+
+      &:hover  { background: var(--color-surface-soft); }
+      &:focus-visible { background: var(--color-primary-soft); }
+
+      .month-name {
+        font-size: var(--font-size-md);
+        font-weight: var(--weight-bold);
+        color: var(--color-text);
       }
 
-      td {
-        padding: 0.6rem 0.75rem;
-        border-bottom: 1px solid #f0f0f0;
-        font-variant-numeric: tabular-nums;
+      .month-figures {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+
+        .figure {
+          display: flex;
+          flex-direction: column;
+          gap: 0.15rem;
+          min-width: 0;
+
+          .figure-label {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-muted);
+            font-weight: var(--weight-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+          }
+          .figure-value {
+            font-size: var(--font-size-base);
+            font-weight: var(--weight-semibold);
+            color: var(--color-text);
+            white-space: nowrap;
+            &.income { color: var(--color-positive-strong); }
+            &.expense { color: var(--color-negative-strong); }
+            &.positive { color: var(--color-positive-strong); }
+            &.negative { color: var(--color-negative-strong); }
+          }
+        }
       }
 
-      .month-row {
-        cursor: pointer;
-        transition: background 100ms;
-        &:hover { background: var(--hover, #f5f5f5); }
+      .month-status .status-pill {
+        width: 30px; height: 30px;
+        border-radius: var(--radius-pill);
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        &.positive { background: var(--color-positive); color: #fff; }
+        &.negative { background: var(--color-negative); color: #fff; }
+        &.zero     { background: var(--color-border);   color: var(--color-text-soft); }
       }
 
-      .income { color: #2e7d32; }
-      .expense { color: #c62828; }
-      .positive { color: #2e7d32; font-weight: 600; }
-      .negative { color: #c62828; font-weight: 600; }
+      .month-chevron { color: var(--color-text-muted); flex-shrink: 0; }
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .yearly-dashboard {
+    .period-nav {
+      grid-template-columns: auto 1fr auto;
+      .month-toggle { grid-column: 1 / -1; margin-top: 0.25rem; }
+    }
+    .months-card .month-row {
+      grid-template-columns: 1fr auto;
+      gap: 0.6rem;
+      .month-figures {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr 1fr;
+        .figure.net { grid-column: 1 / -1; }
+      }
+      .month-chevron { display: none; }
     }
   }
 }

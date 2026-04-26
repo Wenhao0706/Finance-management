@@ -59,6 +59,10 @@ $z-toast: 70;
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 // ====== Sidebar ======
+// Stays pinned to the viewport on desktop so the user can always reach
+// the sign-out button without scrolling, regardless of how long the page
+// content is. The internal column scrolls if the nav itself ever
+// overflows (rare on desktop but possible on shorter laptops).
 .sidebar {
   width: 260px;
   background: var(--color-sidebar-bg);
@@ -67,6 +71,17 @@ $z-toast: 70;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+  overflow-y: auto;
+  // Subtle inner scrollbar styling (WebKit) so it doesn't fight the
+  // dark sidebar surface when content overflows.
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
 
   .brand {
     display: flex;

@@ -69,6 +69,10 @@ export class YearlyDashboardComponent implements OnInit {
   }
 
   monthName(month: number): string {
-    return new Date(2000, month - 1, 1).toLocaleString('en-US', { month: 'short' });
+    return new Date(2000, month - 1, 1).toLocaleString('en-US', { month: 'long' });
+  }
+
+  absoluteAmount(value: number): number {
+    return Math.abs(value);
   }
 }

@@ -1,41 +1,94 @@
 <div class="yearly-dashboard">
-  <header class="period-nav">
-    <button class="nav-btn" (click)="goPrevYear()" aria-label="Previous year">◀</button>
-    <h2 class="period-label">{{ year }}</h2>
-    <button class="nav-btn" (click)="goNextYear()" aria-label="Next year">▶</button>
-    <button class="month-toggle" (click)="goMonthView()">Month</button>
+  <h1 class="page-title">My year at a glance</h1>
+
+  <header class="period-nav" aria-label="Pick a year">
+    <button class="nav-btn" type="button" (click)="goPrevYear()" aria-label="Previous year">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="period-label" aria-live="polite">
+      <div class="period-eyebrow">Showing the year</div>
+      <h2 class="period-month">{{ year }}</h2>
+    </div>
+    <button class="nav-btn" type="button" (click)="goNextYear()" aria-label="Next year">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+    <button class="month-toggle" type="button" (click)="goMonthView()" aria-label="Back to monthly view">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span>Back to a month</span>
+    </button>
   </header>
 
-  <div *ngIf="loading()" class="loading">Loading…</div>
-  <div *ngIf="loadError()" class="error" role="alert">{{ loadError() }}</div>
+  <div *ngIf="loading()" class="state-msg">Loading your year…</div>
+  <div *ngIf="loadError()" class="state-msg error" role="alert">{{ loadError() }}</div>
 
   <ng-container *ngIf="!loading() && !loadError() && summary">
     <app-period-summary [summary]="summary"></app-period-summary>
 
-    <div class="months-card" *ngIf="summary.monthlyBreakdown">
-      <h3>Months</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Month</th>
-            <th>Income</th>
-            <th>Expenses</th>
-            <th>Net</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let m of summary.monthlyBreakdown" (click)="goToMonth(m.month)" class="month-row">
-            <td>{{ monthName(m.month) }}</td>
-            <td class="income">{{ m.income | currency }}</td>
-            <td class="expense">{{ m.expenses | currency }}</td>
-            <td [class.positive]="m.netFlow >= 0" [class.negative]="m.netFlow < 0">
-              {{ m.netFlow >= 0 ? '+' : '' }}{{ m.netFlow | currency }}
-            </td>
-            <td>{{ m.netFlow >= 0 ? '✅' : '⚠️' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <section class="months-card" *ngIf="summary.monthlyBreakdown" aria-labelledby="months-heading">
+      <div class="card-head">
+        <h3 id="months-heading">Month by month</h3>
+        <p class="card-sub">Tap any row to see the details for that month.</p>
+      </div>
+
+      <ul class="month-list" role="list">
+        <li *ngFor="let m of summary.monthlyBreakdown"
+            class="month-row"
+            [class.is-positive]="m.netFlow > 0"
+            [class.is-negative]="m.netFlow < 0"
+            [class.is-zero]="m.netFlow === 0"
+            tabindex="0"
+            role="button"
+            (click)="goToMonth(m.month)"
+            (keydown.enter)="goToMonth(m.month)"
+            (keydown.space)="$event.preventDefault(); goToMonth(m.month)">
+          <div class="month-name">{{ monthName(m.month) }}</div>
+
+          <div class="month-figures">
+            <div class="figure">
+              <span class="figure-label">Money in</span>
+              <span class="figure-value income amount">{{ m.income | currency }}</span>
+            </div>
+            <div class="figure">
+              <span class="figure-label">Money out</span>
+              <span class="figure-value expense amount">{{ m.expenses | currency }}</span>
+            </div>
+            <div class="figure net">
+              <span class="figure-label">Difference</span>
+              <span class="figure-value amount" [class.positive]="m.netFlow > 0" [class.negative]="m.netFlow < 0">
+                {{ m.netFlow > 0 ? '+' : (m.netFlow < 0 ? '−' : '') }}{{ absoluteAmount(m.netFlow) | currency }}
+              </span>
+            </div>
+          </div>
+
+          <div class="month-status" aria-hidden="true">
+            <span class="status-pill" [class.positive]="m.netFlow > 0" [class.negative]="m.netFlow < 0" [class.zero]="m.netFlow === 0">
+              <svg *ngIf="m.netFlow > 0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <svg *ngIf="m.netFlow < 0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <svg *ngIf="m.netFlow === 0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </span>
+          </div>
+
+          <svg class="month-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </li>
+      </ul>
+    </section>
   </ng-container>
 </div>
