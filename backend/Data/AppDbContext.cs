@@ -10,6 +10,8 @@ public class AppDbContext : DbContext
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
+    public DbSet<BlockedIp> BlockedIps => Set<BlockedIp>();
+    public DbSet<EmailNotification> EmailNotifications => Set<EmailNotification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,5 +45,21 @@ public class AppDbContext : DbContext
             new Category { Id = 9, Name = "Healthcare", Type = "expense", Icon = "local_hospital" },
             new Category { Id = 10, Name = "Shopping", Type = "expense", Icon = "shopping_cart" }
         );
+
+        modelBuilder.Entity<BlockedIp>(b =>
+        {
+            b.HasIndex(x => x.IpAddress).IsUnique();
+            b.HasIndex(x => x.ExpiresAt);
+            b.Property(x => x.IpAddress).HasMaxLength(45).IsRequired();
+            b.Property(x => x.Reason).HasMaxLength(64).IsRequired();
+        });
+
+        modelBuilder.Entity<EmailNotification>(b =>
+        {
+            b.HasIndex(x => new { x.Kind, x.Recipient, x.Key, x.SentAt });
+            b.Property(x => x.Kind).HasMaxLength(32).IsRequired();
+            b.Property(x => x.Recipient).HasMaxLength(320).IsRequired();
+            b.Property(x => x.Key).HasMaxLength(64).IsRequired();
+        });
     }
 }
