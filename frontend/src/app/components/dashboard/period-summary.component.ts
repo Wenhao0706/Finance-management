@@ -20,4 +20,17 @@ export class PeriodSummaryComponent {
     if (this.summary.income === 0) return null;
     return Math.round(this.summary.savings / this.summary.income * 1000) / 10;
   }
+
+  // Net status drives the icon and the plain-language line beneath it.
+  // The visual indicator only fires when the user truly came out ahead —
+  // a flat $0.00 month is "no activity yet", not a win.
+  get netStatus(): 'positive' | 'negative' | 'zero' {
+    if (this.summary.netFlow > 0) return 'positive';
+    if (this.summary.netFlow < 0) return 'negative';
+    return 'zero';
+  }
+
+  get absoluteNet(): number {
+    return Math.abs(this.summary.netFlow);
+  }
 }

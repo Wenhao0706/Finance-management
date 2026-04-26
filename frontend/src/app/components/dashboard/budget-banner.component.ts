@@ -28,9 +28,11 @@ export class BudgetBannerComponent {
     return null;
   }
 
+  // Plain-language messages — "category" / "bucket" jargon replaced with
+  // copy a non-technical user can act on.
   get message(): string {
-    if (this.tier === 'over') return 'You are over budget on at least one bucket or category this month.';
-    if (this.tier === 'warn') return 'You are approaching your budget limit on at least one bucket or category.';
+    if (this.tier === 'over') return 'Heads up — you\'ve gone over your plan in one or more spending areas this month.';
+    if (this.tier === 'warn') return 'You\'re getting close to your limit in one or more spending areas this month.';
     return '';
   }
 }

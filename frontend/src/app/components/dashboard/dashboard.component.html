@@ -1,12 +1,33 @@
 <div class="dashboard">
-  <header class="period-nav">
-    <button class="nav-btn" (click)="goPrev()" aria-label="Previous month">◀</button>
-    <h2 class="period-label">{{ monthLabel }}</h2>
-    <button class="nav-btn" (click)="goNext()" aria-label="Next month">▶</button>
-    <button class="year-toggle" (click)="goYearView()">Year</button>
+  <h1 class="page-title">Dashboard</h1>
+
+  <header class="period-nav" aria-label="Pick a month">
+    <button class="nav-btn" type="button" (click)="goPrev()" aria-label="Previous month">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="period-label" aria-live="polite">
+      <div class="period-eyebrow">Showing</div>
+      <h2 class="period-month">{{ monthLabel }}</h2>
+    </div>
+    <button class="nav-btn" type="button" (click)="goNext()" aria-label="Next month">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+    <button class="year-toggle" type="button" (click)="goYearView()" aria-label="See the whole year">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span>See whole year</span>
+    </button>
   </header>
 
-  <div *ngIf="loading()" class="loading">Loading…</div>
+  <div *ngIf="loading()" class="loading">Loading your dashboard…</div>
   <div *ngIf="loadError()" class="error" role="alert">{{ loadError() }}</div>
 
   <ng-container *ngIf="!loading() && !loadError() && summary">
@@ -18,21 +39,55 @@
     </ng-container>
     <app-category-bars [categories]="summary.categoryBreakdown" [caps]="summary.budget?.categoryCaps ?? []"></app-category-bars>
 
-    <div class="recent-transactions" *ngIf="recentTransactions">
-      <h3>Recent transactions</h3>
-      <div *ngIf="recentTransactions.length === 0" class="empty">No transactions yet.</div>
-      <ul *ngIf="recentTransactions.length > 0">
-        <li *ngFor="let txn of recentTransactions">
-          <span class="txn-desc">{{ txn.description }}</span>
-          <span class="txn-cat">{{ txn.category }}</span>
-          <span class="txn-amt" [class.income]="txn.type === 'income'" [class.expense]="txn.type === 'expense'">
-            {{ txn.type === 'income' ? '+' : '−' }}{{ txn.amount | currency }}
-          </span>
-        </li>
-      </ul>
-      <a routerLink="/transactions" class="view-all">View all transactions →</a>
-    </div>
+    <section class="recent-transactions" *ngIf="recentTransactions" aria-labelledby="recent-heading">
+      <h3 id="recent-heading">Recent activity</h3>
 
-    <a routerLink="/transactions/new" class="add-btn">+ Add transaction</a>
+      @if (recentTransactions.length === 0) {
+        <div class="empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <line x1="9" y1="14" x2="15" y2="14"></line>
+          </svg>
+          <p class="empty-title">No activity yet this month</p>
+          <p class="empty-helper">When you add money in or out, it will show up here.</p>
+        </div>
+      } @else {
+        <ul role="list">
+          <li *ngFor="let txn of recentTransactions">
+            <span class="txn-marker" [class.income]="txn.type === 'income'" [class.expense]="txn.type === 'expense'" aria-hidden="true">
+              <svg *ngIf="txn.type === 'income'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+              <svg *ngIf="txn.type === 'expense'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+              </svg>
+            </span>
+            <span class="txn-desc">{{ txn.description }}</span>
+            <span class="txn-cat">{{ txn.category }}</span>
+            <span class="txn-amt amount" [class.income]="txn.type === 'income'" [class.expense]="txn.type === 'expense'">
+              {{ txn.type === 'income' ? '+' : '−' }}{{ txn.amount | currency }}
+            </span>
+          </li>
+        </ul>
+        <a routerLink="/transactions" class="view-all">
+          See all my transactions
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      }
+    </section>
+
+    <a routerLink="/transactions/new" class="add-btn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Add a new transaction</span>
+    </a>
   </ng-container>
 </div>

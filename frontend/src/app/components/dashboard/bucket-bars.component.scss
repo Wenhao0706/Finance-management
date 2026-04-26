@@ -1,49 +1,119 @@
 .bucket-bars-card {
-  background: var(--card-bg, #fff);
-  border: 1px solid var(--border, #e5e5e5);
-  border-radius: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-card);
 
-  h3 { margin: 0 0 1rem 0; font-size: 1rem; color: var(--text-muted, #666); }
-  .hint { padding: 0.5rem 0; color: #666; font-style: italic;
-    a { color: #2563eb; }
+  .card-head {
+    margin-bottom: 1rem;
+    h3 {
+      margin: 0 0 0.4rem 0;
+      font-size: var(--font-size-lg);
+      color: var(--color-text);
+    }
+    .card-sub {
+      margin: 0;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      line-height: 1.45;
+    }
+  }
+
+  .hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    background: var(--color-primary-soft);
+    border: 1px solid #bfdbfe;
+    color: var(--color-primary-strong);
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.25rem;
+    font-size: var(--font-size-sm);
+    line-height: 1.45;
+    svg { flex-shrink: 0; margin-top: 2px; }
+    a { font-weight: var(--weight-semibold); color: var(--color-primary-strong); text-decoration: underline; }
   }
 
   .bucket-row {
-    margin-bottom: 1rem;
+    margin-bottom: 1.1rem;
+    &:last-child { margin-bottom: 0; }
+
     .row-head {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.35rem;
-      font-size: 0.95rem;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
 
-      .bucket-name { font-weight: 500; }
-      .bucket-amount {
-        font-variant-numeric: tabular-nums;
-        color: var(--text-muted, #666);
+      .bucket-name {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: var(--weight-semibold);
+        font-size: var(--font-size-base);
+        color: var(--color-text);
+
+        .bucket-dot {
+          width: 10px; height: 10px;
+          border-radius: 50%;
+          background: var(--color-positive);
+          &.warn { background: var(--color-warn); }
+          &.over { background: var(--color-negative); }
+        }
       }
-      .pct {
-        margin-left: 0.25rem;
-        font-weight: 500;
-        &.warn { color: #f57c00; }
-        &.over { color: #c62828; font-weight: 700; }
+      .bucket-amount {
+        font-size: var(--font-size-base);
+        color: var(--color-text-soft);
+        font-weight: var(--weight-medium);
+        .of { color: var(--color-text-muted); margin: 0 0.1em; }
       }
     }
 
     .bar-track {
-      background: #f0f0f0;
-      height: 12px;
-      border-radius: 6px;
+      background: var(--color-surface-sunk);
+      height: 14px;
+      border-radius: var(--radius-pill);
       overflow: hidden;
+      border: 1px solid var(--color-divider);
 
       .bar-fill {
         height: 100%;
         transition: width 250ms ease-out;
-        &.ok { background: linear-gradient(90deg, #2e7d32, #4caf50); }
-        &.warn { background: linear-gradient(90deg, #f57c00, #ff9800); }
-        &.over { background: linear-gradient(90deg, #c62828, #ef5350); }
+        &.ok   { background: linear-gradient(90deg, var(--color-positive-strong), var(--color-positive)); }
+        &.warn { background: linear-gradient(90deg, var(--color-warn-strong),     var(--color-warn));     }
+        &.over { background: linear-gradient(90deg, var(--color-negative-strong), var(--color-negative)); }
       }
     }
+
+    .row-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
+      font-size: var(--font-size-sm);
+
+      .pct {
+        font-weight: var(--weight-semibold);
+        color: var(--color-text-soft);
+        &.warn { color: var(--color-warn-strong); }
+        &.over { color: var(--color-negative-strong); }
+      }
+      .status-msg {
+        color: var(--color-text-muted);
+        text-align: right;
+      }
+    }
+  }
+}
+
+@media (max-width: 540px) {
+  .bucket-bars-card {
+    .row-foot { flex-direction: column; align-items: flex-start; }
+    .row-foot .status-msg { text-align: left; }
   }
 }

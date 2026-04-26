@@ -1,24 +1,50 @@
-<div class="bucket-bars-card">
-  <h3>50/30/20 Buckets</h3>
-  <div class="hint" *ngIf="budget.expectedIncome === 0">
-    Set an expected income in <a routerLink="/settings/budget">budget settings</a> to track buckets.
+<section class="bucket-bars-card" aria-labelledby="buckets-heading">
+  <div class="card-head">
+    <h3 id="buckets-heading">How your money is split this month</h3>
+    <p class="card-sub">Following the 50/30/20 plan: half for the things you need, a bit less for things you want, the rest into savings.</p>
   </div>
+
+  <div class="hint" *ngIf="budget.expectedIncome === 0" role="note">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+    <span>Tell us how much you usually earn each month in <a routerLink="/settings/budget">monthly budget</a>, and we'll show you how you're tracking.</span>
+  </div>
+
   <div *ngFor="let b of bucketEntries()" class="bucket-row" [class.over]="b.usage.status === 'over'">
     <div class="row-head">
-      <span class="bucket-name">{{ b.name }}</span>
-      <span class="bucket-amount">
-        {{ b.usage.spent | currency }} / {{ b.usage.capEffective | currency }}
-        <span class="pct" [class.warn]="b.usage.status === 'warn'" [class.over]="b.usage.status === 'over'">
-          ({{ b.usage.pctUsed }}%)
-        </span>
+      <span class="bucket-name">
+        <span class="bucket-dot"
+              [class.ok]="b.usage.status === 'ok'"
+              [class.warn]="b.usage.status === 'warn'"
+              [class.over]="b.usage.status === 'over'"
+              aria-hidden="true"></span>
+        {{ bucketDisplayName(b.name) }}
+      </span>
+      <span class="bucket-amount amount">
+        {{ b.usage.spent | currency }} <span class="of">of</span> {{ b.usage.capEffective | currency }}
       </span>
     </div>
-    <div class="bar-track">
+    <div class="bar-track" role="progressbar"
+         [attr.aria-valuenow]="b.usage.pctUsed"
+         aria-valuemin="0"
+         [attr.aria-valuemax]="100"
+         [attr.aria-label]="bucketDisplayName(b.name) + ' progress'">
       <div class="bar-fill"
            [style.width.%]="visualPct(b.usage)"
            [class.ok]="b.usage.status === 'ok'"
            [class.warn]="b.usage.status === 'warn'"
            [class.over]="b.usage.status === 'over'"></div>
     </div>
+    <div class="row-foot">
+      <span class="pct"
+            [class.warn]="b.usage.status === 'warn'"
+            [class.over]="b.usage.status === 'over'">
+        {{ b.usage.pctUsed }}% used
+      </span>
+      <span class="status-msg">{{ statusMessage(b.usage.status, b.usage.capEffective - b.usage.spent) }}</span>
+    </div>
   </div>
-</div>
+</section>

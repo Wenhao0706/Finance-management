@@ -1,86 +1,141 @@
 <div class="form-page">
-  <h1>Add Transaction</h1>
+  <h1>Add a transaction</h1>
+  <p class="lede">Tell us about money coming in or going out. We'll keep track of it for you.</p>
 
   <form (ngSubmit)="onSubmit()" class="form-card" #txForm="ngForm" novalidate>
 
     @if (errorMessage()) {
-      <div class="form-error" role="alert" aria-live="assertive">{{ errorMessage() }}</div>
+      <div class="form-error" role="alert" aria-live="assertive">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
     }
 
-    <div class="form-group">
-      <label for="type" class="required">Type</label>
-      <select id="type" [(ngModel)]="form.type" name="type" (ngModelChange)="filterCategories()" [disabled]="saving()">
-        <option value="expense">Expense</option>
-        <option value="income">Income</option>
-      </select>
-    </div>
+    <!-- Type selector — big tap-target pills, much friendlier than a dropdown -->
+    <fieldset class="type-toggle" [disabled]="saving()">
+      <legend class="field-legend">What kind of transaction?</legend>
+      <div class="type-options" role="radiogroup" aria-label="Transaction type">
+        <button
+          type="button"
+          class="type-option"
+          [class.active]="form.type === 'expense'"
+          [attr.aria-pressed]="form.type === 'expense'"
+          (click)="setType('expense')"
+        >
+          <span class="type-icon expense" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </span>
+          <span class="type-label">Money going out</span>
+          <span class="type-helper">e.g. groceries, petrol, rent</span>
+        </button>
+        <button
+          type="button"
+          class="type-option"
+          [class.active]="form.type === 'income'"
+          [attr.aria-pressed]="form.type === 'income'"
+          (click)="setType('income')"
+        >
+          <span class="type-icon income" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+          </span>
+          <span class="type-label">Money coming in</span>
+          <span class="type-helper">e.g. salary, gift, refund</span>
+        </button>
+      </div>
+    </fieldset>
 
     <div class="form-group">
-      <label for="description" class="required">Description</label>
+      <label for="description">What was it for? <span class="req-mark" aria-hidden="true">*</span><span class="visually-hidden">required</span></label>
       <input
         id="description"
         type="text"
         [(ngModel)]="form.description"
         name="description"
-        placeholder="e.g. Grocery shopping"
+        placeholder="e.g. Grocery shopping at Tesco"
         autocomplete="off"
         required
         maxlength="120"
         [disabled]="saving()"
       >
+      <p class="field-hint">A short note so you remember what this was.</p>
     </div>
 
     <div class="form-group">
-      <label for="amount" class="required">Amount</label>
-      <input
-        id="amount"
-        type="number"
-        [(ngModel)]="form.amount"
-        name="amount"
-        placeholder="0.00"
-        min="0.01"
-        step="0.01"
-        inputmode="decimal"
-        required
-        [disabled]="saving()"
-      >
+      <label for="amount">How much? <span class="req-mark" aria-hidden="true">*</span><span class="visually-hidden">required</span></label>
+      <div class="currency-input">
+        <span class="currency-prefix" aria-hidden="true">$</span>
+        <input
+          id="amount"
+          type="number"
+          [(ngModel)]="form.amount"
+          name="amount"
+          placeholder="0.00"
+          min="0.01"
+          step="0.01"
+          inputmode="decimal"
+          required
+          [disabled]="saving()"
+        >
+      </div>
     </div>
 
     <div class="form-group">
-      <label for="category" class="required">Category</label>
+      <label for="category">Category <span class="req-mark" aria-hidden="true">*</span><span class="visually-hidden">required</span></label>
       @if (loadingCategories()) {
         <div class="select-skeleton" aria-busy="true" aria-label="Loading categories"></div>
       } @else {
-        <select id="category" [(ngModel)]="form.category" name="category" required [disabled]="saving() || filteredCategories.length === 0">
-          @if (filteredCategories.length === 0) {
-            <option value="" disabled>No categories available</option>
-          }
-          @for (cat of filteredCategories; track cat.id) {
-            <option [value]="cat.name">{{ cat.name }}</option>
-          }
-        </select>
+        <div class="select-wrapper">
+          <select id="category" [(ngModel)]="form.category" name="category" required [disabled]="saving() || filteredCategories.length === 0">
+            @if (filteredCategories.length === 0) {
+              <option value="" disabled>No categories available</option>
+            }
+            @for (cat of filteredCategories; track cat.id) {
+              <option [value]="cat.name">{{ cat.name }}</option>
+            }
+          </select>
+          <svg class="select-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
       }
+      <p class="field-hint">Pick the closest match. You can change categories later in Settings.</p>
     </div>
 
     @if (form.type === 'expense') {
       <div class="form-group">
-        <label for="classification">Need / Want / Savings (optional)</label>
-        <select
-          id="classification"
-          [(ngModel)]="form.classification"
-          name="classification"
-          [disabled]="saving()"
-        >
-          <option value="">(use category default)</option>
-          <option value="Need">Need</option>
-          <option value="Want">Want</option>
-          <option value="Savings">Savings</option>
-        </select>
+        <label for="classification">Is this a need, want, or saving?</label>
+        <div class="select-wrapper">
+          <select
+            id="classification"
+            [(ngModel)]="form.classification"
+            name="classification"
+            [disabled]="saving()"
+          >
+            <option value="">Use what's normal for this category</option>
+            <option value="Need">Need (something I have to pay for)</option>
+            <option value="Want">Want (something I chose to buy)</option>
+            <option value="Savings">Savings (money I'm setting aside)</option>
+          </select>
+          <svg class="select-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <p class="field-hint">Optional. Helps group your spending into the 50/30/20 plan.</p>
       </div>
     }
 
     <div class="form-group">
-      <label for="date" class="required">Date</label>
+      <label for="date">When did this happen? <span class="req-mark" aria-hidden="true">*</span><span class="visually-hidden">required</span></label>
       <input
         id="date"
         type="date"
@@ -89,6 +144,7 @@
         required
         [disabled]="saving()"
       >
+      <p class="field-hint">Today is filled in by default. Change it if this is from another day.</p>
     </div>
 
     <div class="form-actions">
@@ -107,7 +163,10 @@
           <span class="btn-spinner" aria-hidden="true"></span>
           <span>Saving…</span>
         } @else {
-          <span>Save Transaction</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Save transaction</span>
         }
       </button>
     </div>

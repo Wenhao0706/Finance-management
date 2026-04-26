@@ -2,6 +2,11 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BudgetSnapshot } from '../../models/budget.model';
 
+interface CarryPart {
+  name: string;
+  amount: number;
+}
+
 @Component({
   selector: 'app-carry-in-line',
   standalone: true,
@@ -18,17 +23,17 @@ export class CarryInLineComponent {
         || this.budget.buckets.savings.carryIn !== 0;
   }
 
-  parts(): string[] {
-    const fmt = (name: string, v: number) => {
-      if (v === 0) return null;
-      const sign = v > 0 ? '+' : '';
-      return `${sign}${v.toFixed(2)} ${name}`;
-    };
-    const items = [
-      fmt('Needs', this.budget.buckets.needs.carryIn),
-      fmt('Wants', this.budget.buckets.wants.carryIn),
-      fmt('Savings', this.budget.buckets.savings.carryIn),
-    ].filter((s): s is string => s !== null);
-    return items;
+  // Returns one part per non-zero bucket carry-in; signed amount is kept
+  // raw (negative = "owed" / overspent last month).
+  detailedParts(): CarryPart[] {
+    return [
+      { name: 'Needs',   amount: this.budget.buckets.needs.carryIn },
+      { name: 'Wants',   amount: this.budget.buckets.wants.carryIn },
+      { name: 'Savings', amount: this.budget.buckets.savings.carryIn },
+    ].filter(p => p.amount !== 0);
+  }
+
+  absValue(v: number): number {
+    return Math.abs(v);
   }
 }

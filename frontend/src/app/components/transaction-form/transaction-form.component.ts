@@ -55,6 +55,13 @@ export class TransactionFormComponent implements OnInit {
     }
   }
 
+  setType(type: 'income' | 'expense'): void {
+    if (this.form.type === type) return;
+    this.form.type = type;
+    if (type === 'income') this.form.classification = '';
+    this.filterCategories();
+  }
+
   onSubmit(): void {
     if (this.saving()) return;          // hard double-submit guard
     if (!this.form.description || !this.form.amount || !this.form.category) return;

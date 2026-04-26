@@ -1,19 +1,39 @@
-<div class="category-bars-card">
-  <h3>{{ title }}</h3>
-  <div *ngIf="categories.length === 0" class="empty">No expenses recorded for this period.</div>
-  <div *ngFor="let cat of categories" class="category-row">
-    <span class="cat-name">
-      {{ cat.category }}
-      <span *ngIf="capInfoFor(cat.category) as capInfo" class="cap-badge"
-            [class.warn]="capInfo.status === 'warn'"
-            [class.over]="capInfo.status === 'over'">
-        cap: {{ capInfo.monthlyCap | currency }} ({{ capInfo.pctUsed }}%)
-      </span>
-    </span>
-    <span class="cat-amount">{{ cat.amount | currency }}</span>
-    <div class="bar-track">
-      <div class="bar-fill" [style.width.%]="cat.percentage"></div>
+<section class="category-bars-card" aria-labelledby="cat-heading">
+  <h3 id="cat-heading">{{ title === 'Categories' ? 'Where my money went' : title }}</h3>
+
+  @if (categories.length === 0) {
+    <div class="empty">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5A8.38 8.38 0 0 1 4 11.5C4 6.81 7.81 3 12.5 3S21 6.81 21 11.5z"></path>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <p class="empty-title">Nothing spent here yet</p>
+      <p class="empty-helper">Once you record an expense, your spending breakdown will appear here.</p>
     </div>
-    <span class="cat-pct">{{ cat.percentage }}%</span>
-  </div>
-</div>
+  } @else {
+    <ul role="list">
+      <li *ngFor="let cat of categories" class="category-row">
+        <div class="row-head">
+          <span class="cat-name">{{ cat.category }}</span>
+          <span class="cat-amount amount">{{ cat.amount | currency }}</span>
+        </div>
+        <div class="bar-track" role="progressbar"
+             [attr.aria-valuenow]="cat.percentage"
+             aria-valuemin="0"
+             [attr.aria-valuemax]="100"
+             [attr.aria-label]="cat.category + ' share of expenses'">
+          <div class="bar-fill" [style.width.%]="cat.percentage"></div>
+        </div>
+        <div class="row-foot">
+          <span class="cat-pct">{{ cat.percentage }}% of what you spent</span>
+          <span *ngIf="capInfoFor(cat.category) as capInfo" class="cap-badge"
+                [class.warn]="capInfo.status === 'warn'"
+                [class.over]="capInfo.status === 'over'">
+            limit: {{ capInfo.monthlyCap | currency }} ({{ capInfo.pctUsed }}% used)
+          </span>
+        </div>
+      </li>
+    </ul>
+  }
+</section>

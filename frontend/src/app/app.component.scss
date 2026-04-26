@@ -11,15 +11,14 @@ $z-toast: 70;
 }
 
 // ====== Mobile top bar ======
-// Hidden by default (desktop). Becomes visible at <= 768px.
 .mobile-topbar {
   display: none;
   position: sticky;
   top: 0;
   z-index: $z-topbar;
   height: 56px;
-  background: #1e293b;
-  color: #fff;
+  background: var(--color-sidebar-bg);
+  color: var(--color-text-on-dark);
   padding: 0 0.75rem;
   align-items: center;
   gap: 0.75rem;
@@ -27,94 +26,118 @@ $z-toast: 70;
   .hamburger {
     background: transparent;
     border: none;
-    color: #fff;
-    width: 44px;       // WCAG min touch target
-    height: 44px;
-    border-radius: 8px;
+    color: inherit;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background var(--transition-fast);
 
     &:hover { background: rgba(255, 255, 255, 0.1); }
     &:active { background: rgba(255, 255, 255, 0.2); }
-    &:focus-visible {
-      outline: 2px solid #60a5fa;
-      outline-offset: 2px;
-    }
   }
 
   .mobile-brand {
-    font-weight: 700;
-    font-size: 1rem;
+    font-weight: var(--weight-bold);
+    font-size: var(--font-size-md);
+    letter-spacing: -0.01em;
   }
 }
 
 // ====== Backdrop ======
 .backdrop {
-  display: none;     // Only shown when sidebar is open on mobile
+  display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(15, 23, 42, 0.55);
   z-index: $z-backdrop;
   animation: fadeIn 0.2s ease-out;
 }
-
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 // ====== Sidebar ======
 .sidebar {
-  width: 240px;
-  background: #1e293b;
-  color: #fff;
-  padding: 1.5rem 0;
+  width: 260px;
+  background: var(--color-sidebar-bg);
+  color: var(--color-sidebar-text);
+  padding: 1.25rem 0 1rem;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
 
   .brand {
-    padding: 0 1.5rem 1.5rem;
-    border-bottom: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1.5rem 1.25rem;
+    border-bottom: 1px solid var(--color-sidebar-divider);
 
-    h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 700;
+    .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--color-primary);
+      color: var(--color-text-on-dark);
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: var(--font-size-lg);
+      font-weight: var(--weight-bold);
+      color: #ffffff;
+      letter-spacing: -0.01em;
     }
   }
 }
 
+.nav-section-label {
+  padding: 1rem 1.5rem 0.4rem;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  font-weight: var(--weight-semibold);
+}
+
 .nav-links {
   list-style: none;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   margin: 0;
 
   li a {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.5rem;
-    color: #94a3b8;
+    gap: 0.85rem;
+    padding: 0.85rem 1.5rem;
+    color: var(--color-sidebar-text);
     text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.15s, color 0.15s;
+    font-size: var(--font-size-md);
+    font-weight: var(--weight-medium);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+    min-height: var(--touch-target-min);
 
     svg { flex-shrink: 0; opacity: 0.85; }
 
     &:hover {
-      color: #fff;
-      background: #334155;
+      color: #ffffff;
+      background: var(--color-sidebar-bg-2);
+      text-decoration: none;
     }
 
     &.active {
-      color: #fff;
-      background: #3b82f6;
+      color: var(--color-sidebar-active-text);
+      background: var(--color-sidebar-active-bg);
       svg { opacity: 1; }
     }
 
     &:focus-visible {
-      outline: 2px solid #60a5fa;
+      outline: 2px solid #93c5fd;
       outline-offset: -2px;
     }
   }
@@ -123,49 +146,65 @@ $z-toast: 70;
 .content {
   flex: 1;
   padding: 2rem;
-  background: #f1f5f9;
-  min-width: 0;       // prevent flex children from forcing horizontal scroll
+  background: var(--color-bg);
+  min-width: 0;
 }
 
 .sidebar-footer {
   margin-top: auto;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #334155;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--color-sidebar-divider);
 }
 
 .user-info {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin-bottom: 0.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-text-on-dark);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--weight-bold);
+    font-size: var(--font-size-sm);
+    flex-shrink: 0;
+  }
+
+  .user-name {
+    font-size: var(--font-size-sm);
+    color: #e2e8f0;
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .logout-btn {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
   background: transparent;
   border: 1px solid #475569;
-  border-radius: 6px;
-  color: #94a3b8;
-  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-sidebar-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: 44px;
 
   &:hover {
-    color: #fff;
+    color: #ffffff;
     border-color: #64748b;
-    background: #334155;
-  }
-
-  &:focus-visible {
-    outline: 2px solid #60a5fa;
-    outline-offset: 2px;
+    background: var(--color-sidebar-bg-2);
   }
 }
 
@@ -175,7 +214,7 @@ $z-toast: 70;
 .app-splash {
   position: fixed;
   inset: 0;
-  background: #fff;
+  background: var(--color-surface);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -187,9 +226,9 @@ $z-toast: 70;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: #0f172a;
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
 
   .app-splash__icon {
     display: inline-flex;
@@ -198,49 +237,39 @@ $z-toast: 70;
     width: 56px;
     height: 56px;
     border-radius: 14px;
-    background: #1e293b;
+    background: var(--color-sidebar-bg);
     color: #60a5fa;
   }
 }
 .app-splash__spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border: 3px solid var(--color-divider);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-// Reduced-motion handling lives in global styles.scss — the spinner still
-// spins, just slower, so users get the expected "loading" signal without
-// a vestibular trigger. Fade-only alternatives violate user mental model.
 
 .verify-banner {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--color-warn-soft);
+  color: var(--color-warn-strong);
   text-align: center;
-  padding: 0.6rem;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
 }
 
 // ============================================
 // MOBILE — sidebar becomes a drawer
 // ============================================
 @media (max-width: 768px) {
-  .app-layout {
-    flex-direction: column;
-  }
-
-  .mobile-topbar {
-    display: flex;
-  }
+  .app-layout { flex-direction: column; }
+  .mobile-topbar { display: flex; }
 
   .sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    top: 0; left: 0; bottom: 0;
     width: 280px;
     max-width: 80vw;
     z-index: $z-sidebar;
@@ -249,19 +278,15 @@ $z-toast: 70;
     box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
     padding-top: 1.25rem;
 
-    // Make the in-drawer brand redundant header less duplicative — keep
-    // the brand row but smaller since there's also one in the topbar.
-    .brand h2 { font-size: 1.1rem; }
+    .brand .brand-name { font-size: var(--font-size-md); }
   }
 
   .app-layout.sidebar-open {
-    .sidebar { transform: translateX(0); }
+    .sidebar  { transform: translateX(0); }
     .backdrop { display: block; }
   }
 
-  .content {
-    padding: 1rem;
-  }
+  .content { padding: 1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,22 +1,35 @@
 .budget-banner {
-  border-radius: 6px;
-  padding: 0.6rem 0.85rem;
-  margin-bottom: 1rem;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
+  align-items: flex-start;
+  gap: 0.7rem;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1rem;
+  font-size: var(--font-size-base);
+  line-height: 1.45;
+  border: 1px solid transparent;
 
-  .icon { font-size: 1.1rem; }
+  .icon {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: var(--radius-pill);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .msg {
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-soft);
+  }
 
   &.warn {
-    background: #fff8e1;
-    border: 1px solid #ffe082;
-    color: #8a6d00;
+    background: var(--color-warn-soft);
+    border-color: #fcd34d;
+    .icon { background: var(--color-warn); color: #ffffff; }
+    .msg  { color: var(--color-warn-strong); }
   }
   &.over {
-    background: #ffebee;
-    border: 1px solid #ef9a9a;
-    color: #c62828;
+    background: var(--color-negative-soft);
+    border-color: #fca5a5;
+    .icon { background: var(--color-negative); color: #ffffff; }
+    .msg  { color: var(--color-negative-strong); }
   }
 }

@@ -1,31 +1,143 @@
-*, *::before, *::after {
-  box-sizing: border-box;
+// =============================================================
+// Global design tokens — single source of truth for color,
+// spacing, typography, radius, shadow. Tuned for a senior-
+// friendly finance app: larger body type, calm contrast, big
+// touch targets, accessible focus rings.
+// =============================================================
+
+:root {
+  // Surface colors
+  --color-bg:           #f6f8fb;   // page background — warmer than slate-100
+  --color-surface:      #ffffff;
+  --color-surface-soft: #f1f5f9;
+  --color-surface-sunk: #eef2f7;
+
+  // Text — at least slate-700 minimum for muted, slate-900 for primary
+  --color-text:         #0f172a;
+  --color-text-soft:    #1e293b;
+  --color-text-muted:   #475569;   // 7.4:1 on white (AA Large + AA Normal)
+  --color-text-on-dark: #f8fafc;
+
+  // Borders
+  --color-border:        #cbd5e1;
+  --color-border-strong: #94a3b8;
+  --color-divider:       #e2e8f0;
+
+  // Brand accent — single saturated blue, contrast 5.5:1 on white
+  --color-primary:       #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-soft:  #eff6ff;
+  --color-primary-strong:#1e40af;
+
+  // Money colors — both AA on white at body sizes
+  --color-positive:        #15803d;   // 5.0:1 on white
+  --color-positive-strong: #166534;
+  --color-positive-soft:   #dcfce7;
+  --color-negative:        #b91c1c;   // 5.7:1 on white
+  --color-negative-strong: #991b1b;
+  --color-negative-soft:   #fee2e2;
+  --color-warn:            #b45309;   // amber, 5.0:1 on white
+  --color-warn-strong:     #92400e;
+  --color-warn-soft:       #fef3c7;
+
+  // Sidebar (dark) — kept dark navy to preserve product identity
+  --color-sidebar-bg:     #0f172a;
+  --color-sidebar-bg-2:   #1e293b;
+  --color-sidebar-text:   #cbd5e1;
+  --color-sidebar-active-bg:   #2563eb;
+  --color-sidebar-active-text: #ffffff;
+  --color-sidebar-divider: #334155;
+
+  // Typography — bumped to 17px so older eyes don't strain
+  --font-family-body: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-numeric: 'IBM Plex Sans', system-ui, sans-serif;     // 'tnum' aligned digits via feature-settings below
+  --font-size-xs:   0.875rem;   // 14px — only for non-critical metadata
+  --font-size-sm:   1rem;       // 16px — formerly base
+  --font-size-base: 1.0625rem;  // 17px — body default
+  --font-size-md:   1.125rem;   // 18px — input text, larger labels
+  --font-size-lg:   1.25rem;    // 20px — section headings
+  --font-size-xl:   1.5rem;     // 24px
+  --font-size-2xl:  1.875rem;   // 30px — page H1
+  --font-size-3xl:  2.25rem;    // 36px — hero numbers (balance, totals)
+  --line-height-tight: 1.25;
+  --line-height-base:  1.55;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  // Radius
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  // Shadow
+  --shadow-card:      0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px rgba(15, 23, 42, .06);
+  --shadow-raised:    0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .04);
+  --shadow-floating:  0 12px 32px rgba(15, 23, 42, .12), 0 4px 8px rgba(15, 23, 42, .06);
+
+  // Touch targets
+  --touch-target-min: 48px;     // larger than WCAG 44px — kinder to older / less precise users
+
+  // Motion
+  --transition-fast: 120ms ease-out;
+  --transition-base: 180ms ease-out;
 }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 16px; }    // anchor for rem math; rem = 16px so 1rem = 16px
 
 body {
   margin: 0;
-  font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 16px;
-  color: #1e293b;
-  background: #f1f5f9;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+  background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+// Tabular numerals everywhere money is shown — declared globally so we
+// don't have to remember to opt in per-component.
+.num,
+.amount,
+.tabular,
+[data-num],
+input[type="number"] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 a { color: inherit; }
+a:hover { text-decoration: underline; }
 
-h1, h2, h3, h4 { margin-top: 0; }
+h1, h2, h3, h4 { margin-top: 0; line-height: var(--line-height-tight); }
+h1 { font-size: var(--font-size-2xl); font-weight: var(--weight-bold); }
+h2 { font-size: var(--font-size-xl); font-weight: var(--weight-semibold); }
+h3 { font-size: var(--font-size-lg); font-weight: var(--weight-semibold); }
 
+p  { margin: 0 0 0.75rem 0; }
+
+// Visually hide elements but keep them accessible to screen readers
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+// Focus ring — strong, always visible for keyboard users.
 *:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 3px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-// Reduced-motion safeguard — crushes animations + transitions globally so
-// parallax and scroll-jacking don't cause vestibular discomfort. Small
-// bounded loading indicators are explicitly carved out below: users need
-// the universally-recognized "spinning = loading" signal, and a 32px
-// contained rotation doesn't trigger motion sensitivity per WAI guidance.
+// Reduced-motion safeguard — see notes on loading indicator carve-outs below.
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -33,17 +145,6 @@ h1, h2, h3, h4 { margin-top: 0; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-
-  // Loading indicators: keep animating, just slower. Preserves the
-  // animation names + keyframes defined in each component; only the
-  // wildcard's aggressive duration/iteration-count overrides are reversed
-  // here so spinners and skeleton shimmers remain visibly active.
-  //
-  // Covered indicators:
-  //   .app-splash__spinner   — app-shell bootstrap splash
-  //   .skeleton-bar          — dashboard / transactions row placeholders
-  //   .select-skeleton       — transaction-form category dropdown placeholder
-  //   .btn-spinner           — submit-button loading state
   .app-splash__spinner,
   .skeleton-bar,
   .select-skeleton,
@@ -53,12 +154,5 @@ h1, h2, h3, h4 { margin-top: 0; }
   }
 }
 
-// Cross-tab safety net — if Firebase syncs an auth session from another tab
-// before the LoginComponent's redirect completes, the template briefly
-// renders LoginComponent inside the authenticated shell (sidebar + login
-// branding side-by-side). Hide the login component whenever it's nested
-// under the authenticated layout; the guestGuard + LoginComponent's
-// ngOnInit redirect will unmount it within the same turn.
-.app-layout app-login {
-  display: none;
-}
+// Cross-tab safety net — see app.component for full context.
+.app-layout app-login { display: none; }

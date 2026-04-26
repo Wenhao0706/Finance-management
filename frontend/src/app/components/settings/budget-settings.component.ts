@@ -98,6 +98,15 @@ export class BudgetSettingsComponent implements OnInit {
 
   get derivedPlaceholder(): string {
     if (!this.snapshot || this.snapshot.expectedIncomeIsExplicit) return '';
-    return `Auto: ${this.snapshot.expectedIncome.toFixed(2)} (last month's actual)`;
+    if (this.snapshot.expectedIncome === 0) return 'e.g. 3,000.00';
+    return `${this.snapshot.expectedIncome.toFixed(2)} (from last month)`;
+  }
+
+  // Long-form, human-readable period label, e.g. "April 2026".
+  get humanPeriod(): string {
+    if (!this.snapshot) return '';
+    const m = this.snapshot.period.month ?? this.month;
+    const y = this.snapshot.period.year;
+    return new Date(y, m - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
   }
 }

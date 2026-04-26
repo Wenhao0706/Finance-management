@@ -45,7 +45,7 @@ export class TransactionsComponent implements OnInit {
   // fails, restore the row at its original position so the user sees the
   // rollback.
   deleteTransaction(t: Transaction): void {
-    if (!confirm(`Delete "${t.description}"? This cannot be undone.`)) return;
+    if (!confirm(`Are you sure you want to delete "${t.description}"?\n\nThis cannot be undone.`)) return;
 
     const index = this.transactions.indexOf(t);
     if (index === -1) return;
@@ -56,7 +56,7 @@ export class TransactionsComponent implements OnInit {
         const restored = [...this.transactions];
         restored.splice(index, 0, t);
         this.transactions = restored;
-        alert('Could not delete that transaction. Please try again.');
+        alert('Sorry — we could not delete that transaction. Please try again.');
       },
     });
   }

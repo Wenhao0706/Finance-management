@@ -56,14 +56,21 @@
         <div class="backdrop" (click)="closeSidebar()" aria-hidden="true"></div>
       }
 
-      <nav id="primary-nav" class="sidebar" [attr.aria-hidden]="sidebarOpen() ? null : 'true'">
+      <nav id="primary-nav" class="sidebar" [attr.aria-hidden]="sidebarOpen() ? null : 'true'" aria-label="Main navigation">
         <div class="brand">
-          <h2>FinanceApp</h2>
+          <div class="brand-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+          <span class="brand-name">FinanceApp</span>
         </div>
-        <ul class="nav-links">
+
+        <ul class="nav-links" role="list">
           <li>
             <a routerLink="/dashboard" routerLinkActive="active">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <rect x="3" y="3" width="7" height="9"></rect>
                 <rect x="14" y="3" width="7" height="5"></rect>
                 <rect x="14" y="12" width="7" height="9"></rect>
@@ -74,19 +81,47 @@
           </li>
           <li>
             <a routerLink="/transactions" routerLinkActive="active">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 12h-9"></path>
                 <path d="M3 6h18"></path>
                 <path d="M3 18h12"></path>
               </svg>
-              <span>Transactions</span>
+              <span>My transactions</span>
             </a>
           </li>
         </ul>
+
+        <div class="nav-section-label">Settings</div>
+        <ul class="nav-links" role="list">
+          <li>
+            <a routerLink="/settings/budget" routerLinkActive="active">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"></path>
+                <path d="M12 6v2m0 8v2"></path>
+              </svg>
+              <span>Monthly budget</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/settings/categories" routerLinkActive="active">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 7h18"></path>
+                <path d="M6 12h12"></path>
+                <path d="M9 17h6"></path>
+              </svg>
+              <span>Categories</span>
+            </a>
+          </li>
+        </ul>
+
         <div class="sidebar-footer">
-          <div class="user-info">{{ userName$ | async }}</div>
+          <div class="user-info">
+            <div class="user-avatar" aria-hidden="true">{{ (userName$ | async) ? (userName$ | async)![0].toUpperCase() : 'U' }}</div>
+            <div class="user-name">{{ userName$ | async }}</div>
+          </div>
           <button class="logout-btn" (click)="logout()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16 17 21 12 16 7"></polyline>
               <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -96,7 +131,7 @@
         </div>
       </nav>
 
-      <main class="content">
+      <main class="content" id="main-content">
         <router-outlet />
       </main>
     </div>

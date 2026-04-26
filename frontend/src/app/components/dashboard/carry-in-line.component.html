@@ -1,6 +1,19 @@
 <div *ngIf="hasAnyCarryIn()" class="carry-in-line">
-  <span class="label">Carry-in from last month:</span>
-  <span *ngFor="let p of parts(); let last = last" class="part">
-    {{ p }}<span *ngIf="!last">,</span>
-  </span>
+  <div class="ci-icon" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12a9 9 0 1 1 9 9"></path>
+      <polyline points="3 5 3 12 10 12"></polyline>
+    </svg>
+  </div>
+  <div class="ci-body">
+    <div class="ci-title">Money carried over from last month</div>
+    <ul class="ci-parts">
+      <li *ngFor="let p of detailedParts()" [class.positive]="p.amount > 0" [class.negative]="p.amount < 0">
+        <span class="part-name">{{ p.name }}</span>
+        <span class="part-amount amount">
+          {{ p.amount > 0 ? '+' : '−' }}{{ absValue(p.amount) | currency }}
+        </span>
+      </li>
+    </ul>
+  </div>
 </div>
