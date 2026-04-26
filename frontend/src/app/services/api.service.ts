@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Transaction, Summary } from '../models/transaction.model';
+import { Transaction } from '../models/transaction.model';
 import { Category } from '../models/category.model';
+import { PeriodSummary } from '../models/summary.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -31,8 +32,18 @@ export class ApiService {
     return this.http.delete<void>(`${this.baseUrl}/transactions/${id}`);
   }
 
-  getSummary(): Observable<Summary> {
-    return this.http.get<Summary>(`${this.baseUrl}/transactions/summary`);
+  getCurrentMonthSummary(): Observable<PeriodSummary> {
+    return this.http.get<PeriodSummary>(`${this.baseUrl}/transactions/summary`);
+  }
+
+  getMonthSummary(year: number, month: number): Observable<PeriodSummary> {
+    return this.http.get<PeriodSummary>(
+      `${this.baseUrl}/transactions/summary?year=${year}&month=${month}`);
+  }
+
+  getYearSummary(year: number): Observable<PeriodSummary> {
+    return this.http.get<PeriodSummary>(
+      `${this.baseUrl}/transactions/summary?year=${year}`);
   }
 
   getCategories(): Observable<Category[]> {
