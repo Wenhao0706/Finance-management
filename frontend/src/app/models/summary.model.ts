@@ -1,3 +1,5 @@
+import { BudgetSnapshot } from './budget.model';
+
 export interface PeriodInfo {
   year: number;
   month?: number;  // omitted = yearly
@@ -26,4 +28,5 @@ export interface PeriodSummary {
   runningBalance: number;
   categoryBreakdown: CategoryAmount[];
   monthlyBreakdown?: MonthlyEntry[];
+  budget?: BudgetSnapshot;  // populated for monthly view, null for yearly
 }

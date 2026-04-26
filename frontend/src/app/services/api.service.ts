@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Transaction } from '../models/transaction.model';
 import { Category } from '../models/category.model';
 import { PeriodSummary } from '../models/summary.model';
+import { BudgetSnapshot, BudgetUpdate, CategoryBudgetEntry, CategoryBudgetUpdate } from '../models/budget.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -48,5 +49,21 @@ export class ApiService {
 
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.baseUrl}/categories`);
+  }
+
+  getBudget(year: number, month: number): Observable<BudgetSnapshot> {
+    return this.http.get<BudgetSnapshot>(`${this.baseUrl}/budgets/${year}/${month}`);
+  }
+
+  updateBudget(year: number, month: number, update: BudgetUpdate): Observable<BudgetSnapshot> {
+    return this.http.put<BudgetSnapshot>(`${this.baseUrl}/budgets/${year}/${month}`, update);
+  }
+
+  getCategoryBudgets(): Observable<CategoryBudgetEntry[]> {
+    return this.http.get<CategoryBudgetEntry[]>(`${this.baseUrl}/category-budgets`);
+  }
+
+  updateCategoryBudget(categoryId: number, update: CategoryBudgetUpdate): Observable<CategoryBudgetEntry> {
+    return this.http.put<CategoryBudgetEntry>(`${this.baseUrl}/category-budgets/${categoryId}`, update);
   }
 }
