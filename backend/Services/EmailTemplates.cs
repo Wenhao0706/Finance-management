@@ -42,4 +42,49 @@ public static class EmailTemplates
 </body></html>";
         return (subject, html);
     }
+
+    public static (string Subject, string Html) BudgetBucketOverspendAlert(
+        string? displayName, string bucket, decimal capEffective, decimal spent, int year, int month)
+    {
+        var name = string.IsNullOrWhiteSpace(displayName) ? "Hi there" : $"Hi {WebUtility.HtmlEncode(displayName)}";
+        var monthName = new DateTime(year, month, 1).ToString("MMMM yyyy");
+        var over = spent - capEffective;
+        var subject = $"[Finance Management] You're over budget on {bucket} this {new DateTime(year, month, 1):MMMM}";
+        var html = $@"
+<!DOCTYPE html><html><body style='font-family:system-ui,sans-serif;max-width:520px;'>
+  <p>{name},</p>
+  <p>You've crossed your <strong>{WebUtility.HtmlEncode(bucket)}</strong> budget for {monthName}.</p>
+  <table cellpadding='4' style='border-collapse:collapse;font-size:14px;margin:1em 0;'>
+    <tr><td>Spent so far</td><td><strong>{spent:C}</strong></td></tr>
+    <tr><td>Budget</td><td>{capEffective:C}</td></tr>
+    <tr><td>Over by</td><td style='color:#c62828;'><strong>{over:C}</strong></td></tr>
+  </table>
+  <p>You still have time to slow down for the rest of the month.</p>
+  <hr style='border:none;border-top:1px solid #ddd;margin:24px 0;'>
+  <p style='font-size:12px;color:#666;'>You're receiving this because your {WebUtility.HtmlEncode(bucket)} spending crossed 100% of your monthly budget.</p>
+</body></html>";
+        return (subject, html);
+    }
+
+    public static (string Subject, string Html) BudgetCategoryOverspendAlert(
+        string? displayName, string categoryName, decimal monthlyCap, decimal spent, int year, int month)
+    {
+        var name = string.IsNullOrWhiteSpace(displayName) ? "Hi there" : $"Hi {WebUtility.HtmlEncode(displayName)}";
+        var monthName = new DateTime(year, month, 1).ToString("MMMM yyyy");
+        var over = spent - monthlyCap;
+        var subject = $"[Finance Management] You're over your {categoryName} budget this {new DateTime(year, month, 1):MMMM}";
+        var html = $@"
+<!DOCTYPE html><html><body style='font-family:system-ui,sans-serif;max-width:520px;'>
+  <p>{name},</p>
+  <p>You've crossed the cap you set for <strong>{WebUtility.HtmlEncode(categoryName)}</strong> in {monthName}.</p>
+  <table cellpadding='4' style='border-collapse:collapse;font-size:14px;margin:1em 0;'>
+    <tr><td>Spent so far</td><td><strong>{spent:C}</strong></td></tr>
+    <tr><td>Cap</td><td>{monthlyCap:C}</td></tr>
+    <tr><td>Over by</td><td style='color:#c62828;'><strong>{over:C}</strong></td></tr>
+  </table>
+  <hr style='border:none;border-top:1px solid #ddd;margin:24px 0;'>
+  <p style='font-size:12px;color:#666;'>You're receiving this because your {WebUtility.HtmlEncode(categoryName)} spending crossed 100% of your monthly cap.</p>
+</body></html>";
+        return (subject, html);
+    }
 }

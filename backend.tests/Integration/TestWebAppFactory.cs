@@ -65,9 +65,23 @@ public sealed class TestWebAppFactory : WebApplicationFactory<Program>
 public sealed class StubFirebaseLookup : IFirebaseUserLookup
 {
     public HashSet<string> RegisteredEmails { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, string> EmailByUid { get; } = new();  // for UID → email lookups in budget alerts
 
-    public Task<FirebaseUserInfo?> LookupAsync(string email, CancellationToken ct)
-        => Task.FromResult(RegisteredEmails.Contains(email) ? new FirebaseUserInfo("Test User") : null);
+    public Task<FirebaseUserInfo?> LookupAsync(string emailOrUid, CancellationToken ct)
+    {
+        if (emailOrUid.Contains('@'))
+        {
+            return Task.FromResult(RegisteredEmails.Contains(emailOrUid)
+                ? new FirebaseUserInfo("Test User", emailOrUid)
+                : null);
+        }
+        // UID lookup
+        if (EmailByUid.TryGetValue(emailOrUid, out var email))
+        {
+            return Task.FromResult<FirebaseUserInfo?>(new FirebaseUserInfo("Test User", email));
+        }
+        return Task.FromResult<FirebaseUserInfo?>(null);
+    }
 }
 
 public sealed class TestAuthStartupFilter : IStartupFilter

@@ -7,9 +7,9 @@ public interface INotificationDispatcher
 
 public interface IFirebaseUserLookup
 {
-    Task<FirebaseUserInfo?> LookupAsync(string email, CancellationToken ct);
+    Task<FirebaseUserInfo?> LookupAsync(string emailOrUid, CancellationToken ct);
 }
 
-public sealed record FirebaseUserInfo(string? DisplayName);
+public sealed record FirebaseUserInfo(string? DisplayName, string? Email = null);
 
 public sealed record DispatcherOptions(string AdminEmail, string ResetPasswordUrl);
