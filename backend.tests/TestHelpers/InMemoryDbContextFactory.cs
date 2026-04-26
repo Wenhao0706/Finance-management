@@ -15,6 +15,9 @@ public sealed class InMemoryDbContextFactory : IDisposable
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open();
 
+        // Note: EnsureCreated builds the schema but does NOT apply HasData() seed
+        // rows (see AppDbContext.OnModelCreating — 10 categories). Tests that need
+        // reference data must insert it explicitly.
         using var context = Create();
         context.Database.EnsureCreated();
     }
