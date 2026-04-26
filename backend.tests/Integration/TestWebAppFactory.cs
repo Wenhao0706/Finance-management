@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using FinanceManagement.API.Data;
 using FinanceManagement.API.Services;
 using FinanceManagement.API.Tests.TestHelpers;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -14,6 +16,7 @@ public sealed class TestWebAppFactory : WebApplicationFactory<Program>
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
     public RecordingEmailSender Sender { get; } = new();
     public StubFirebaseLookup Lookup { get; } = new();
+    public string TestUserId { get; set; } = "test-user-1";
 
     public TestWebAppFactory()
     {
@@ -47,6 +50,8 @@ public sealed class TestWebAppFactory : WebApplicationFactory<Program>
             using var scope = services.BuildServiceProvider().CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             db.Database.EnsureCreated();
+
+            services.AddSingleton<IStartupFilter>(new TestAuthStartupFilter(this));
         });
     }
 
@@ -63,4 +68,28 @@ public sealed class StubFirebaseLookup : IFirebaseUserLookup
 
     public Task<FirebaseUserInfo?> LookupAsync(string email, CancellationToken ct)
         => Task.FromResult(RegisteredEmails.Contains(email) ? new FirebaseUserInfo("Test User") : null);
+}
+
+public sealed class TestAuthStartupFilter : IStartupFilter
+{
+    private readonly TestWebAppFactory _factory;
+
+    public TestAuthStartupFilter(TestWebAppFactory factory) => _factory = factory;
+
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+    {
+        return app =>
+        {
+            app.Use(async (ctx, n) =>
+            {
+                var identity = new ClaimsIdentity(new[]
+                {
+                    new Claim("firebase_uid", _factory.TestUserId),
+                }, "Test");
+                ctx.User = new ClaimsPrincipal(identity);
+                await n();
+            });
+            next(app);
+        };
+    }
 }

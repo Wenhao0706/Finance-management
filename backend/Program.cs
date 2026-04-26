@@ -243,7 +243,10 @@ app.UseForwardedHeaders();
 app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
 app.UseMiddleware<IpBlockMiddleware>();
-app.UseMiddleware<FirebaseAuthMiddleware>();
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseMiddleware<FirebaseAuthMiddleware>();
+}
 if (appCheckConfigured)
 {
     app.UseMiddleware<AppCheckMiddleware>();
