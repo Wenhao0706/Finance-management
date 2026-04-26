@@ -100,6 +100,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<ILockoutService, LockoutService>();
 builder.Services.AddScoped<IPeriodSummaryService, PeriodSummaryService>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
+builder.Services.AddScoped<IBudgetAlertDetector, BudgetAlertDetector>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IBackgroundTaskQueue>(_ => new BackgroundTaskQueue(capacity: 1000));

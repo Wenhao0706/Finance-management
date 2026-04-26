@@ -14,11 +14,19 @@ public class TransactionsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IPeriodSummaryService _summaryService;
+    private readonly IBudgetAlertDetector _alertDetector;
+    private readonly ILogger<TransactionsController> _logger;
 
-    public TransactionsController(AppDbContext db, IPeriodSummaryService summaryService)
+    public TransactionsController(
+        AppDbContext db,
+        IPeriodSummaryService summaryService,
+        IBudgetAlertDetector alertDetector,
+        ILogger<TransactionsController> logger)
     {
         _db = db;
         _summaryService = summaryService;
+        _alertDetector = alertDetector;
+        _logger = logger;
     }
 
     private string? CurrentUserId => User.FindFirst("firebase_uid")?.Value;
@@ -55,6 +63,9 @@ public class TransactionsController : ControllerBase
         transaction.CreatedAt = DateTime.UtcNow;
         _db.Transactions.Add(transaction);
         await _db.SaveChangesAsync();
+
+        await TryFireAlertsAsync(CurrentUserId, transaction.Date);
+
         return CreatedAtAction(nameof(Get), new { id = transaction.Id }, transaction);
     }
 
@@ -77,6 +88,7 @@ public class TransactionsController : ControllerBase
         existing.Date = transaction.Date;
 
         await _db.SaveChangesAsync();
+        await TryFireAlertsAsync(CurrentUserId, existing.Date);
         return NoContent();
     }
 
@@ -93,6 +105,7 @@ public class TransactionsController : ControllerBase
 
         _db.Transactions.Remove(transaction);
         await _db.SaveChangesAsync();
+        await TryFireAlertsAsync(CurrentUserId, transaction.Date);
         return NoContent();
     }
 
@@ -124,6 +137,18 @@ public class TransactionsController : ControllerBase
         {
             var summary = await _summaryService.GetYearlyAsync(CurrentUserId, resolvedYear, ct);
             return Ok(summary);
+        }
+    }
+
+    private async Task TryFireAlertsAsync(string userId, DateTime txnDate)
+    {
+        try
+        {
+            await _alertDetector.OnTransactionChangedAsync(userId, txnDate.Year, txnDate.Month, HttpContext.RequestAborted);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "BudgetAlertDetector threw — transaction operation already succeeded");
         }
     }
 }
