@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using FinanceManagement.API.Data;
 using FinanceManagement.API.Models;
+using FinanceManagement.API.Services;
 
 namespace FinanceManagement.API.Controllers;
 
@@ -12,8 +13,13 @@ namespace FinanceManagement.API.Controllers;
 public class TransactionsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IPeriodSummaryService _summaryService;
 
-    public TransactionsController(AppDbContext db) => _db = db;
+    public TransactionsController(AppDbContext db, IPeriodSummaryService summaryService)
+    {
+        _db = db;
+        _summaryService = summaryService;
+    }
 
     private string? CurrentUserId => User.FindFirst("firebase_uid")?.Value;
 
@@ -91,19 +97,33 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet("summary")]
-    public async Task<ActionResult<object>> GetSummary()
+    public async Task<ActionResult<PeriodSummary>> GetSummary(
+        [FromQuery] int? year,
+        [FromQuery] int? month,
+        CancellationToken ct)
     {
         if (CurrentUserId is null) return Unauthorized();
 
-        var userTransactions = _db.Transactions.Where(t => t.UserId == CurrentUserId);
-        var totalIncome = await userTransactions.Where(t => t.Type == "income").SumAsync(t => (decimal?)t.Amount) ?? 0m;
-        var totalExpense = await userTransactions.Where(t => t.Type == "expense").SumAsync(t => (decimal?)t.Amount) ?? 0m;
+        if (year.HasValue && (year.Value < 2000 || year.Value > 2100))
+            return BadRequest(new { error = "Year must be between 2000 and 2100." });
+        if (month.HasValue && (month.Value < 1 || month.Value > 12))
+            return BadRequest(new { error = "Month must be 1-12." });
+        if (month.HasValue && !year.HasValue)
+            return BadRequest(new { error = "Year is required when month is provided." });
 
-        return new
+        var now = DateTime.UtcNow;
+        var resolvedYear = year ?? now.Year;
+        var resolvedMonth = month ?? (year.HasValue ? (int?)null : now.Month);
+
+        if (resolvedMonth.HasValue)
         {
-            TotalIncome = totalIncome,
-            TotalExpense = totalExpense,
-            Balance = totalIncome - totalExpense
-        };
+            var summary = await _summaryService.GetMonthlyAsync(CurrentUserId, resolvedYear, resolvedMonth.Value, ct);
+            return Ok(summary);
+        }
+        else
+        {
+            var summary = await _summaryService.GetYearlyAsync(CurrentUserId, resolvedYear, ct);
+            return Ok(summary);
+        }
     }
 }

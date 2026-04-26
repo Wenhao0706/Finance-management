@@ -98,6 +98,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddScoped<ILockoutService, LockoutService>();
+builder.Services.AddScoped<IPeriodSummaryService, PeriodSummaryService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IBackgroundTaskQueue>(_ => new BackgroundTaskQueue(capacity: 1000));
