@@ -2,6 +2,9 @@
 backend/bin/
 backend/obj/
 backend/*.user
+backend.tests/bin/
+backend.tests/obj/
+backend.tests/*.user
 
 # Frontend
 frontend/node_modules/
