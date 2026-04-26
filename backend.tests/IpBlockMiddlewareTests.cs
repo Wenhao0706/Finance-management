@@ -1,3 +1,4 @@
+using System.Net;
 using FinanceManagement.API.Data;
 using FinanceManagement.API.Middleware;
 using FinanceManagement.API.Models;
@@ -15,10 +16,14 @@ public class IpBlockMiddlewareTests : IDisposable
 
     public void Dispose() => _dbFactory.Dispose();
 
-    private static HttpContext BuildContext(string xForwardedFor)
+    // Sets Connection.RemoteIpAddress directly — in production
+    // UseForwardedHeaders rewrites RemoteIpAddress from X-Forwarded-For
+    // before the middleware runs, so testing against RemoteIpAddress is
+    // the right unit-test boundary.
+    private static HttpContext BuildContext(string ip)
     {
         var ctx = new DefaultHttpContext();
-        ctx.Request.Headers["X-Forwarded-For"] = xForwardedFor;
+        ctx.Connection.RemoteIpAddress = IPAddress.Parse(ip);
         return ctx;
     }
 

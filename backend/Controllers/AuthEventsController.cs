@@ -26,7 +26,7 @@ public class AuthEventsController : ControllerBase
             return BadRequest(new { error = "Email is required." });
         }
 
-        var ip = ResolveClientIp(HttpContext);
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         var ua = HttpContext.Request.Headers.UserAgent.FirstOrDefault();
 
         await _lockout.RecordAsync(dto.Email, ip, dto.Success, ua, dto.ErrorCode, cancellationToken);
@@ -42,23 +42,9 @@ public class AuthEventsController : ControllerBase
             return BadRequest(new { error = "Email is required." });
         }
 
-        var ip = ResolveClientIp(HttpContext);
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         var decision = await _lockout.CheckAsync(email, ip, cancellationToken);
         return Ok(decision);
-    }
-
-    // Resolve the real client IP. We're behind nginx + Cloudflare Tunnel,
-    // so X-Forwarded-For is the authoritative source; RemoteIpAddress would
-    // be the Docker bridge gateway and would lump every client together.
-    private static string ResolveClientIp(HttpContext ctx)
-    {
-        var forwarded = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(forwarded))
-        {
-            return forwarded.Split(',')[0].Trim();
-        }
-
-        return ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }
 

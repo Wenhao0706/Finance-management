@@ -1,4 +1,6 @@
+using System.Net;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using FinanceManagement.API.Data;
@@ -12,20 +14,47 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// Rate limiter — partition by Firebase UID when authenticated, fall back to
-// client IP (prefer X-Forwarded-For since we sit behind nginx + Cloudflare Tunnel).
-// Global default covers reads; named "writes" policy is applied via
-// [EnableRateLimiting("writes")] on POST/PUT/DELETE endpoints.
+// Forwarded-headers config — when this app sits behind a trusted proxy
+// (the nginx container in the Docker bridge network in prod), incoming
+// X-Forwarded-For values are used to populate Connection.RemoteIpAddress.
+// When the immediate peer is NOT in the trusted-proxies list, the header
+// is ignored, preventing an attacker who reaches the backend directly
+// from spoofing IPs and rotating the rate-limit / IP-block partition key.
+//
+// In Testing the test factory's HttpClient connects to TestServer with
+// no real network hop, so we trust everything to let test-supplied
+// X-Forwarded-For values flow through.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 1;
+
+    if (builder.Environment.IsEnvironment("Testing"))
+    {
+        options.KnownIPNetworks.Clear();
+        options.KnownProxies.Clear();
+    }
+    else
+    {
+        // Default Docker bridge networks (172.16.0.0/12 and 10.0.0.0/8)
+        // cover any nginx container co-deployed via docker-compose. Loopback
+        // is also trusted for local non-Docker dev runs.
+        options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
+        options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
+        options.KnownProxies.Add(IPAddress.Loopback);
+        options.KnownProxies.Add(IPAddress.IPv6Loopback);
+    }
+});
+
+// Rate limiter — partition by Firebase UID when authenticated, fall back
+// to client IP. RemoteIpAddress is the canonical IP source: UseForwardedHeaders
+// (registered first in the pipeline) rewrites it from X-Forwarded-For
+// when the immediate peer is in the trusted-proxies list, and leaves it
+// as the actual TCP peer otherwise.
 static string ResolvePartitionKey(HttpContext ctx)
 {
     var uid = ctx.User.FindFirst("firebase_uid")?.Value;
     if (!string.IsNullOrEmpty(uid)) return $"uid:{uid}";
-
-    var forwarded = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-    if (!string.IsNullOrWhiteSpace(forwarded))
-    {
-        return $"ip:{forwarded.Split(',')[0].Trim()}";
-    }
 
     return $"ip:{ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
 }
@@ -58,10 +87,7 @@ builder.Services.AddRateLimiter(options =>
     // /api/auth-events with bogus events to grow the LoginAttempts table.
     options.AddPolicy("authEvents", ctx =>
     {
-        var fwd = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        var ip = !string.IsNullOrWhiteSpace(fwd)
-            ? fwd.Split(',')[0].Trim()
-            : ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
         return RateLimitPartition.GetFixedWindowLimiter($"ip:{ip}", _ => new FixedWindowRateLimiterOptions
         {
@@ -208,6 +234,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// MUST be first — rewrites Connection.RemoteIpAddress from X-Forwarded-For
+// when the immediate peer is a trusted proxy. Every downstream component
+// that reads the client IP (rate limiter, IpBlockMiddleware, controllers)
+// depends on this having run already.
+app.UseForwardedHeaders();
 app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
 app.UseMiddleware<IpBlockMiddleware>();

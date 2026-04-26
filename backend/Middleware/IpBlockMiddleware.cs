@@ -29,7 +29,10 @@ public sealed class IpBlockMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var ip = ResolveClientIp(context);
+        // Connection.RemoteIpAddress is the canonical IP — UseForwardedHeaders
+        // (registered first in Program.cs) rewrites it from X-Forwarded-For
+        // when the immediate peer is a trusted proxy.
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
         var blocked = await IsBlockedAsync(ip, context);
         if (blocked)
@@ -58,16 +61,5 @@ public sealed class IpBlockMiddleware
 
         _cache.Set(key, blocked, CacheTtl);
         return blocked;
-    }
-
-    private static string ResolveClientIp(HttpContext ctx)
-    {
-        var forwarded = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(forwarded))
-        {
-            return forwarded.Split(',')[0].Trim();
-        }
-
-        return ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }
