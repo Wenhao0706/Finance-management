@@ -107,8 +107,14 @@ else
     Console.WriteLine("INFO: NoOpEmailSender registered (RESEND_API_KEY missing or LOCKOUT_ALERTS_ENABLED=false).");
 }
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// In the Testing environment the integration test factory swaps in an
+// in-memory SQLite provider — registering Npgsql here would cause EF to
+// see two providers in the same service container and fail at startup.
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
 var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? new[] { "http://localhost:4200" };
@@ -130,24 +136,31 @@ builder.Services.AddCors(options =>
 var serviceAccountB64 = Environment.GetEnvironmentVariable("FIREBASE_SERVICE_ACCOUNT_JSON");
 var serviceAccountPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
 
-if (!string.IsNullOrWhiteSpace(serviceAccountB64))
+// Skip Firebase init in the Testing environment — `FirebaseApp.Create` is a
+// static singleton, so the second integration test would throw
+// "default FirebaseApp already exists" when WebApplicationFactory rebuilds
+// the host. The `IFirebaseUserLookup` test double bypasses the SDK entirely.
+if (!builder.Environment.IsEnvironment("Testing"))
 {
-    var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(serviceAccountB64));
-    FirebaseApp.Create(new AppOptions
+    if (!string.IsNullOrWhiteSpace(serviceAccountB64))
     {
-        Credential = GoogleCredential.FromJson(json),
-    });
-}
-else if (File.Exists(serviceAccountPath))
-{
-    FirebaseApp.Create(new AppOptions
+        var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(serviceAccountB64));
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromJson(json),
+        });
+    }
+    else if (File.Exists(serviceAccountPath))
     {
-        Credential = GoogleCredential.FromFile(serviceAccountPath),
-    });
-}
-else
-{
-    Console.WriteLine("WARNING: Firebase credentials missing. Set FIREBASE_SERVICE_ACCOUNT_JSON env var (base64) or place firebase-service-account.json at the app root. Auth middleware will fail.");
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromFile(serviceAccountPath),
+        });
+    }
+    else
+    {
+        Console.WriteLine("WARNING: Firebase credentials missing. Set FIREBASE_SERVICE_ACCOUNT_JSON env var (base64) or place firebase-service-account.json at the app root. Auth middleware will fail.");
+    }
 }
 
 // App Check wiring — only registered when the project number and app ID are
@@ -178,10 +191,16 @@ else
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+// Skip migrations in the Testing environment — the integration test
+// factory uses SQLite + EnsureCreated() and the Postgres-typed migrations
+// would fail against SQLite.
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
 }
 
 if (app.Environment.IsDevelopment())
