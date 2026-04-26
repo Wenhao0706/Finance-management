@@ -39,6 +39,8 @@ export class DashboardComponent implements OnInit {
     'housing':        '#60a5fa',
     'shopping':       '#a78bfa',
     'savings':        'var(--color-mint)',
+    'freelance':      '#fb923c',
+    'investments':    '#22c55e',
   };
 
   constructor(
