@@ -1,0 +1,6 @@
+<div *ngIf="hasAnyCarryIn()" class="carry-in-line">
+  <span class="label">Carry-in from last month:</span>
+  <span *ngFor="let p of parts(); let last = last" class="part">
+    {{ p }}<span *ngIf="!last">,</span>
+  </span>
+</div>

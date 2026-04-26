@@ -1,0 +1,4 @@
+<div *ngIf="tier" class="budget-banner" [class.warn]="tier === 'warn'" [class.over]="tier === 'over'" role="status">
+  <span class="icon">{{ tier === 'over' ? '⚠️' : '🟡' }}</span>
+  <span class="msg">{{ message }}</span>
+</div>

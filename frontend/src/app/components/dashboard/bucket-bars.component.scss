@@ -1,0 +1,49 @@
+.bucket-bars-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  h3 { margin: 0 0 1rem 0; font-size: 1rem; color: var(--text-muted, #666); }
+  .hint { padding: 0.5rem 0; color: #666; font-style: italic;
+    a { color: #2563eb; }
+  }
+
+  .bucket-row {
+    margin-bottom: 1rem;
+    .row-head {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.35rem;
+      font-size: 0.95rem;
+
+      .bucket-name { font-weight: 500; }
+      .bucket-amount {
+        font-variant-numeric: tabular-nums;
+        color: var(--text-muted, #666);
+      }
+      .pct {
+        margin-left: 0.25rem;
+        font-weight: 500;
+        &.warn { color: #f57c00; }
+        &.over { color: #c62828; font-weight: 700; }
+      }
+    }
+
+    .bar-track {
+      background: #f0f0f0;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+
+      .bar-fill {
+        height: 100%;
+        transition: width 250ms ease-out;
+        &.ok { background: linear-gradient(90deg, #2e7d32, #4caf50); }
+        &.warn { background: linear-gradient(90deg, #f57c00, #ff9800); }
+        &.over { background: linear-gradient(90deg, #c62828, #ef5350); }
+      }
+    }
+  }
+}

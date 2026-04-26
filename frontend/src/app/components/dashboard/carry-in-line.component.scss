@@ -1,0 +1,11 @@
+.carry-in-line {
+  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #555;
+
+  .label { font-weight: 500; margin-right: 0.5rem; }
+  .part { font-variant-numeric: tabular-nums; margin-right: 0.25rem; }
+}

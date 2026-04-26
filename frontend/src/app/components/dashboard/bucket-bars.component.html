@@ -1,0 +1,24 @@
+<div class="bucket-bars-card">
+  <h3>50/30/20 Buckets</h3>
+  <div class="hint" *ngIf="budget.expectedIncome === 0">
+    Set an expected income in <a routerLink="/settings/budget">budget settings</a> to track buckets.
+  </div>
+  <div *ngFor="let b of bucketEntries()" class="bucket-row" [class.over]="b.usage.status === 'over'">
+    <div class="row-head">
+      <span class="bucket-name">{{ b.name }}</span>
+      <span class="bucket-amount">
+        {{ b.usage.spent | currency }} / {{ b.usage.capEffective | currency }}
+        <span class="pct" [class.warn]="b.usage.status === 'warn'" [class.over]="b.usage.status === 'over'">
+          ({{ b.usage.pctUsed }}%)
+        </span>
+      </span>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill"
+           [style.width.%]="visualPct(b.usage)"
+           [class.ok]="b.usage.status === 'ok'"
+           [class.warn]="b.usage.status === 'warn'"
+           [class.over]="b.usage.status === 'over'"></div>
+    </div>
+  </div>
+</div>

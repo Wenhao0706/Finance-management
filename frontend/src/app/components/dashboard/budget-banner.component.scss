@@ -1,0 +1,22 @@
+.budget-banner {
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+
+  .icon { font-size: 1.1rem; }
+
+  &.warn {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    color: #8a6d00;
+  }
+  &.over {
+    background: #ffebee;
+    border: 1px solid #ef9a9a;
+    color: #c62828;
+  }
+}
