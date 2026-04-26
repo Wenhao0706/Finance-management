@@ -1,0 +1,29 @@
+<div class="period-summary-card">
+  <div class="row">
+    <span class="label">Income</span>
+    <span class="value income">{{ summary.income | currency }}</span>
+  </div>
+  <div class="row">
+    <span class="label">Expenses</span>
+    <span class="value expense">
+      {{ summary.expenses | currency }}
+      <span class="hint" *ngIf="summary.savings > 0">(incl. {{ summary.savings | currency }} to Savings)</span>
+    </span>
+  </div>
+  <div class="row net" [class.positive]="summary.netFlow >= 0" [class.negative]="summary.netFlow < 0">
+    <span class="label">Net</span>
+    <span class="value">
+      {{ summary.netFlow >= 0 ? '+' : '' }}{{ summary.netFlow | currency }}
+      <span class="indicator">{{ summary.netFlow >= 0 ? '✅' : '⚠️' }}</span>
+    </span>
+  </div>
+  <hr>
+  <div class="row balance">
+    <span class="label">Balance</span>
+    <span class="value">{{ summary.runningBalance | currency }}</span>
+  </div>
+  <div class="row" *ngIf="isYearly && savingsRate !== null">
+    <span class="label">Savings rate</span>
+    <span class="value">{{ savingsRate }}% <span class="hint">(aim 20%)</span></span>
+  </div>
+</div>
