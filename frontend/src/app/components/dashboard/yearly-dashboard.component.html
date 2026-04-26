@@ -1,0 +1,41 @@
+<div class="yearly-dashboard">
+  <header class="period-nav">
+    <button class="nav-btn" (click)="goPrevYear()" aria-label="Previous year">◀</button>
+    <h2 class="period-label">{{ year }}</h2>
+    <button class="nav-btn" (click)="goNextYear()" aria-label="Next year">▶</button>
+    <button class="month-toggle" (click)="goMonthView()">Month</button>
+  </header>
+
+  <div *ngIf="loading()" class="loading">Loading…</div>
+  <div *ngIf="loadError()" class="error" role="alert">{{ loadError() }}</div>
+
+  <ng-container *ngIf="!loading() && !loadError() && summary">
+    <app-period-summary [summary]="summary"></app-period-summary>
+
+    <div class="months-card" *ngIf="summary.monthlyBreakdown">
+      <h3>Months</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Income</th>
+            <th>Expenses</th>
+            <th>Net</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of summary.monthlyBreakdown" (click)="goToMonth(m.month)" class="month-row">
+            <td>{{ monthName(m.month) }}</td>
+            <td class="income">{{ m.income | currency }}</td>
+            <td class="expense">{{ m.expenses | currency }}</td>
+            <td [class.positive]="m.netFlow >= 0" [class.negative]="m.netFlow < 0">
+              {{ m.netFlow >= 0 ? '+' : '' }}{{ m.netFlow | currency }}
+            </td>
+            <td>{{ m.netFlow >= 0 ? '✅' : '⚠️' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>
