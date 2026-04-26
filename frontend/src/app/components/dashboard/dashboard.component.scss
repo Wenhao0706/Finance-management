@@ -109,11 +109,16 @@
 }
 
 // ===== Bento grid
+// Tiles in the same row stretch to the same height so paired tiles
+// (Hero ↔ Money in, Donut ↔ Money out, Saved ↔ Recent activity)
+// have flush top AND bottom edges. Within each tile, content sits at
+// the top and the trailing element (e.g. the trend caption) is pushed
+// to the bottom via margin-top:auto on .tile-stat-trend so the empty
+// space falls AFTER the data, not BETWEEN it.
 .bento {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: minmax(0, auto);
-  align-items: start;
+  align-items: stretch;
   gap: 1rem;
   margin-bottom: 1rem;
 }
@@ -128,8 +133,14 @@
   position: relative;
   overflow: hidden;
   transition: border-color var(--transition-fast);
+  display: flex;
+  flex-direction: column;
 }
 .tile:hover { border-color: var(--glass-border-on); }
+// Push trend caption / sub-label to the bottom of the tile so the
+// big number stays close to its label and the trailing line lives
+// at the foot of the card.
+.tile-stat-trend { margin-top: auto; }
 
 .span-12 { grid-column: span 12; }
 .span-7  { grid-column: span 7; }
