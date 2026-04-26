@@ -290,8 +290,12 @@
   display: flex;
   flex-direction: column;
 }
-.add-detail-card .text-input { margin-top: auto; }
-.add-detail-card .date-shortcuts { margin-top: auto; }
+/* The input/chips sit just below their label with normal spacing.
+   The card still stretches to match the taller sibling (date card)
+   in the grid above, but the empty space falls AFTER the input
+   instead of being inserted between label and input. Previously
+   margin-top:auto pushed the input to the card's bottom edge,
+   which read as a confusing gap between label and field. */
 
 .text-input {
   width: 100%;
