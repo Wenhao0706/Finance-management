@@ -43,7 +43,8 @@ public class AppDbContext : DbContext
             new Category { Id = 7, Name = "Utilities", Type = "expense", Icon = "bolt" },
             new Category { Id = 8, Name = "Entertainment", Type = "expense", Icon = "movie" },
             new Category { Id = 9, Name = "Healthcare", Type = "expense", Icon = "local_hospital" },
-            new Category { Id = 10, Name = "Shopping", Type = "expense", Icon = "shopping_cart" }
+            new Category { Id = 10, Name = "Shopping", Type = "expense", Icon = "shopping_cart" },
+            new Category { Id = 11, Name = "Savings", Type = "expense", Icon = "savings" }
         );
 
         modelBuilder.Entity<BlockedIp>(b =>
