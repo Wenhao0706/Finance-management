@@ -1,0 +1,39 @@
+<div class="category-settings">
+  <h2>Category settings</h2>
+  <p class="hint">Set Need/Want/Savings classification and optional monthly cap per category. Leave cap blank for no cap.</p>
+
+  <div *ngIf="loading()" class="loading">Loading…</div>
+  <div *ngIf="loadError()" class="error" role="alert">{{ loadError() }}</div>
+
+  <table *ngIf="!loading() && !loadError()">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Classification</th>
+        <th>Monthly cap</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of rows()">
+        <td>{{ row.entry.name }}</td>
+        <td>
+          <select [(ngModel)]="row.classificationInput">
+            <option value="Need">Need</option>
+            <option value="Want">Want</option>
+            <option value="Savings">Savings</option>
+          </select>
+        </td>
+        <td>
+          <input type="number" min="0" step="0.01" [(ngModel)]="row.capInput" placeholder="(no cap)">
+        </td>
+        <td>
+          <button (click)="saveRow(row)" [disabled]="row.saving">
+            {{ row.saving ? 'Saving…' : 'Save' }}
+          </button>
+          <span *ngIf="row.saved" class="saved">✓</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

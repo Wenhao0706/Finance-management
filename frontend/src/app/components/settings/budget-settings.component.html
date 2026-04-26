@@ -1,0 +1,31 @@
+<div class="budget-settings">
+  <h2>Budget settings — {{ snapshot?.period?.year }}/{{ snapshot?.period?.month }}</h2>
+
+  <div *ngIf="loading()" class="loading">Loading…</div>
+  <div *ngIf="error()" class="error" role="alert">{{ error() }}</div>
+
+  <ng-container *ngIf="!loading() && snapshot">
+    <div class="form-row">
+      <label>
+        Expected monthly income
+        <input type="number" min="0" step="0.01"
+               [(ngModel)]="expectedIncomeInput"
+               [placeholder]="derivedPlaceholder">
+      </label>
+      <p class="hint">Leave blank to auto-derive from last month's actual income.</p>
+    </div>
+
+    <div class="form-row pct-row">
+      <h3>Budget split (must sum to 100%)</h3>
+      <label>Needs <input type="number" min="0" max="100" step="1" [(ngModel)]="needsPctInput">%</label>
+      <label>Wants <input type="number" min="0" max="100" step="1" [(ngModel)]="wantsPctInput">%</label>
+      <label>Savings <input type="number" min="0" max="100" step="1" [(ngModel)]="savingsPctInput">%</label>
+      <p class="sum" [class.bad]="pctSum !== 100">Sum: {{ pctSum }}%</p>
+    </div>
+
+    <button class="save-btn" (click)="save()" [disabled]="saving() || pctSum !== 100">
+      {{ saving() ? 'Saving…' : 'Save budget' }}
+    </button>
+    <p *ngIf="saved()" class="saved">Saved ✓</p>
+  </ng-container>
+</div>

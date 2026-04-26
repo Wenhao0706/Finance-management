@@ -4,6 +4,8 @@ import { YearlyDashboardComponent } from './components/dashboard/yearly-dashboar
 import { TransactionsComponent } from './components/transactions/transactions.component';
 import { TransactionFormComponent } from './components/transaction-form/transaction-form.component';
 import { LoginComponent } from './components/login/login.component';
+import { BudgetSettingsComponent } from './components/settings/budget-settings.component';
+import { CategorySettingsComponent } from './components/settings/category-settings.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 
@@ -15,4 +17,6 @@ export const routes: Routes = [
   { path: 'dashboard/year/:year', component: YearlyDashboardComponent, canActivate: [authGuard] },
   { path: 'transactions', component: TransactionsComponent, canActivate: [authGuard] },
   { path: 'transactions/new', component: TransactionFormComponent, canActivate: [authGuard] },
+  { path: 'settings/budget', component: BudgetSettingsComponent, canActivate: [authGuard] },
+  { path: 'settings/categories', component: CategorySettingsComponent, canActivate: [authGuard] },
 ];
