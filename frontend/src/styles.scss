@@ -1,93 +1,131 @@
 // =============================================================
-// Global design tokens — single source of truth for color,
-// spacing, typography, radius, shadow. Tuned for a senior-
-// friendly finance app: larger body type, calm contrast, big
-// touch targets, accessible focus rings.
+// Global design tokens — single source of truth for colour,
+// typography, radius, shadow, motion. Template D / Aurora Bento
+// design language: navy-black canvas, aurora mesh background,
+// glass-morphism surfaces, cyan/indigo/magenta/mint/coral accents.
 // =============================================================
 
 :root {
-  // Surface colors
-  --color-bg:           #f6f8fb;   // page background — warmer than slate-100
-  --color-surface:      #ffffff;
-  --color-surface-soft: #f1f5f9;
-  --color-surface-sunk: #eef2f7;
+  // Canvas (deepest navy)
+  --bg-0:        #04060f;
+  --bg-1:        #080c1c;
+  --bg-2:        #0d1428;
 
-  // Text — at least slate-700 minimum for muted, slate-900 for primary
-  --color-text:         #0f172a;
-  --color-text-soft:    #1e293b;
-  --color-text-muted:   #475569;   // 7.4:1 on white (AA Large + AA Normal)
-  --color-text-on-dark: #f8fafc;
+  // Glass surfaces
+  --glass-bg:        rgba(255, 255, 255, 0.04);
+  --glass-bg-hover:  rgba(255, 255, 255, 0.07);
+  --glass-border:    rgba(255, 255, 255, 0.08);
+  --glass-border-on: rgba(255, 255, 255, 0.16);
 
-  // Borders
-  --color-border:        #cbd5e1;
-  --color-border-strong: #94a3b8;
-  --color-divider:       #e2e8f0;
+  // Text
+  --color-text:        #f8fafc;
+  --color-text-soft:   #cbd5e1;
+  --color-text-muted:  #94a3b8;
+  --color-text-dim:    #64748b;
 
-  // Brand accent — single saturated blue, contrast 5.5:1 on white
-  --color-primary:       #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-soft:  #eff6ff;
-  --color-primary-strong:#1e40af;
+  // Accents — semantic colours used across charts, chips, money
+  --color-cyan:        #22d3ee;
+  --color-cyan-d:      #06b6d4;
+  --color-cyan-soft:   rgba(34, 211, 238, 0.16);
 
-  // Money colors — both AA on white at body sizes
-  --color-positive:        #15803d;   // 5.0:1 on white
-  --color-positive-strong: #166534;
-  --color-positive-soft:   #dcfce7;
-  --color-negative:        #b91c1c;   // 5.7:1 on white
-  --color-negative-strong: #991b1b;
-  --color-negative-soft:   #fee2e2;
-  --color-warn:            #b45309;   // amber, 5.0:1 on white
-  --color-warn-strong:     #92400e;
-  --color-warn-soft:       #fef3c7;
+  --color-indigo:      #818cf8;
+  --color-indigo-d:    #6366f1;
+  --color-indigo-soft: rgba(129, 140, 248, 0.16);
 
-  // Sidebar (dark) — kept dark navy to preserve product identity
-  --color-sidebar-bg:     #0f172a;
-  --color-sidebar-bg-2:   #1e293b;
-  --color-sidebar-text:   #cbd5e1;
-  --color-sidebar-active-bg:   #2563eb;
-  --color-sidebar-active-text: #ffffff;
-  --color-sidebar-divider: #334155;
+  --color-magenta:     #e879f9;
+  --color-magenta-soft: rgba(232, 121, 249, 0.16);
 
-  // Typography — bumped to 17px so older eyes don't strain
-  --font-family-body: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-numeric: 'IBM Plex Sans', system-ui, sans-serif;     // 'tnum' aligned digits via feature-settings below
-  --font-size-xs:   0.875rem;   // 14px — only for non-critical metadata
-  --font-size-sm:   1rem;       // 16px — formerly base
-  --font-size-base: 1.0625rem;  // 17px — body default
-  --font-size-md:   1.125rem;   // 18px — input text, larger labels
-  --font-size-lg:   1.25rem;    // 20px — section headings
-  --font-size-xl:   1.5rem;     // 24px
-  --font-size-2xl:  1.875rem;   // 30px — page H1
-  --font-size-3xl:  2.25rem;    // 36px — hero numbers (balance, totals)
-  --line-height-tight: 1.25;
-  --line-height-base:  1.55;
+  --color-mint:        #34d399;
+  --color-mint-d:      #10b981;
+  --color-mint-soft:   rgba(52, 211, 153, 0.16);
+
+  --color-coral:       #fb7185;
+  --color-coral-d:     #f43f5e;
+  --color-coral-soft:  rgba(251, 113, 133, 0.16);
+
+  --color-amber:       #fbbf24;
+  --color-amber-d:     #d97706;
+  --color-amber-soft:  rgba(251, 191, 36, 0.18);
+
+  // Aliases for legacy markup. Money colours bind to mint/coral so any
+  // existing component that references --color-positive / --color-negative
+  // automatically picks up the new palette without a class rename.
+  --color-positive:        var(--color-mint);
+  --color-positive-strong: var(--color-mint-d);
+  --color-positive-soft:   var(--color-mint-soft);
+  --color-negative:        var(--color-coral);
+  --color-negative-strong: var(--color-coral-d);
+  --color-negative-soft:   var(--color-coral-soft);
+  --color-warn:            var(--color-amber);
+  --color-warn-strong:     var(--color-amber-d);
+  --color-warn-soft:       var(--color-amber-soft);
+  --color-primary:         var(--color-cyan);
+  --color-primary-hover:   var(--color-cyan-d);
+  --color-primary-soft:    var(--color-cyan-soft);
+  --color-primary-strong:  var(--color-cyan-d);
+  --color-bg:              var(--bg-0);
+  --color-surface:         var(--glass-bg);
+  --color-surface-soft:    rgba(255, 255, 255, 0.03);
+  --color-surface-sunk:    rgba(0, 0, 0, 0.25);
+  --color-divider:         var(--glass-border);
+  --color-border:          var(--glass-border-on);
+  --color-border-strong:   var(--glass-border-on);
+  --color-text-on-dark:    var(--color-text);
+
+  // Sidebar (kept dark navy + glass)
+  --color-sidebar-bg:          rgba(8, 12, 28, 0.7);
+  --color-sidebar-bg-2:        rgba(255, 255, 255, 0.04);
+  --color-sidebar-text:        var(--color-text-soft);
+  --color-sidebar-active-bg:   transparent;     // unused — see app.component.scss
+  --color-sidebar-active-text: var(--color-text);
+  --color-sidebar-divider:     var(--glass-border);
+
+  // Typography
+  --font-family-body:    'Geist', 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-numeric: 'Geist Mono', 'IBM Plex Mono', ui-monospace, monospace;
+  --font-size-xs:   0.78rem;
+  --font-size-sm:   0.92rem;
+  --font-size-base: 1rem;
+  --font-size-md:   1.05rem;
+  --font-size-lg:   1.2rem;
+  --font-size-xl:   1.5rem;
+  --font-size-2xl:  2rem;
+  --font-size-3xl:  2.6rem;
+  --line-height-tight: 1.15;
+  --line-height-base:  1.5;
   --weight-regular:  400;
   --weight-medium:   500;
   --weight-semibold: 600;
   --weight-bold:     700;
+  --weight-black:    800;
 
   // Radius
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-pill: 9999px;
+  --radius-sm:   12px;
+  --radius-md:   18px;
+  --radius-lg:   26px;
+  --radius-pill: 999px;
+  --r-sm:   12px;
+  --r-md:   18px;
+  --r-lg:   26px;
+  --r-pill: 999px;
 
   // Shadow
-  --shadow-card:      0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px rgba(15, 23, 42, .06);
-  --shadow-raised:    0 4px 12px rgba(15, 23, 42, .08), 0 2px 4px rgba(15, 23, 42, .04);
-  --shadow-floating:  0 12px 32px rgba(15, 23, 42, .12), 0 4px 8px rgba(15, 23, 42, .06);
+  --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.30), 0 1px 2px rgba(0, 0, 0, 0.20);
+  --shadow-raised:   0 12px 32px rgba(0, 0, 0, 0.40), 0 2px 6px rgba(0, 0, 0, 0.20);
+  --shadow-floating: 0 16px 48px rgba(0, 0, 0, 0.50), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-glow:     0 0 32px rgba(34, 211, 238, 0.20);
 
-  // Touch targets
-  --touch-target-min: 48px;     // larger than WCAG 44px — kinder to older / less precise users
+  // Touch
+  --touch-target-min: 44px;
 
   // Motion
-  --transition-fast: 120ms ease-out;
-  --transition-base: 180ms ease-out;
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { font-size: 16px; }    // anchor for rem math; rem = 16px so 1rem = 16px
+html { font-size: 16.5px; }
 
 body {
   margin: 0;
@@ -95,13 +133,40 @@ body {
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--bg-0);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01" 1, "ss02" 1, "cv11" 1;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-// Tabular numerals everywhere money is shown — declared globally so we
-// don't have to remember to opt in per-component.
+// Aurora mesh background — fixed so it persists across page transitions.
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(34, 211, 238, 0.18) 0, transparent 38%),
+    radial-gradient(circle at 88%  6%, rgba(232, 121, 249, 0.12) 0, transparent 36%),
+    radial-gradient(circle at  4% 92%, rgba(129, 140, 248, 0.18) 0, transparent 42%),
+    radial-gradient(circle at 96% 88%, rgba( 52, 211, 153, 0.10) 0, transparent 38%);
+  filter: blur(60px);
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(0deg,  transparent 0 60px, rgba(255,255,255,0.012) 60px 61px),
+    repeating-linear-gradient(90deg, transparent 0 60px, rgba(255,255,255,0.012) 60px 61px);
+}
+
+// Tabular numerals globally on money / numeric values.
 .num,
 .amount,
 .tabular,
@@ -111,17 +176,15 @@ input[type="number"] {
   font-feature-settings: "tnum" 1;
 }
 
-a { color: inherit; }
-a:hover { text-decoration: underline; }
+a { color: inherit; text-decoration: none; }
 
-h1, h2, h3, h4 { margin-top: 0; line-height: var(--line-height-tight); }
-h1 { font-size: var(--font-size-2xl); font-weight: var(--weight-bold); }
-h2 { font-size: var(--font-size-xl); font-weight: var(--weight-semibold); }
-h3 { font-size: var(--font-size-lg); font-weight: var(--weight-semibold); }
+h1, h2, h3, h4 { margin-top: 0; line-height: var(--line-height-tight); color: var(--color-text); }
+h1 { font-size: var(--font-size-2xl); font-weight: var(--weight-black); letter-spacing: -0.025em; }
+h2 { font-size: var(--font-size-xl); font-weight: var(--weight-bold); letter-spacing: -0.02em; }
+h3 { font-size: var(--font-size-lg); font-weight: var(--weight-bold); letter-spacing: -0.01em; }
 
-p  { margin: 0 0 0.75rem 0; }
+p { margin: 0 0 0.75rem 0; }
 
-// Visually hide elements but keep them accessible to screen readers
 .visually-hidden {
   position: absolute !important;
   width: 1px; height: 1px;
@@ -130,14 +193,14 @@ p  { margin: 0 0 0.75rem 0; }
   white-space: nowrap; border: 0;
 }
 
-// Focus ring — strong, always visible for keyboard users.
+// Strong, always-visible focus ring for keyboard users.
 *:focus-visible {
-  outline: 3px solid var(--color-primary);
+  outline: 2px solid var(--color-cyan);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-// Reduced-motion safeguard — see notes on loading indicator carve-outs below.
+// Reduced-motion safeguard.
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -154,5 +217,5 @@ p  { margin: 0 0 0.75rem 0; }
   }
 }
 
-// Cross-tab safety net — see app.component for full context.
+// Cross-tab safety net (see app.component.html for the why).
 .app-layout app-login { display: none; }

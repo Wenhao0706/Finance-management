@@ -1,174 +1,163 @@
 <div class="form-page">
-  <h1>Add a transaction</h1>
-  <p class="lede">Tell us about money coming in or going out. We'll keep track of it for you.</p>
+  <div class="page-head">
+    <div>
+      <div class="page-eyebrow">Take your time · no rush</div>
+      <h1 class="page-title">Record a transaction.</h1>
+    </div>
+  </div>
 
-  <form (ngSubmit)="onSubmit()" class="form-card" #txForm="ngForm" novalidate>
+  <form class="add-stage" #txForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
 
     @if (errorMessage()) {
       <div class="form-error" role="alert" aria-live="assertive">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         <span>{{ errorMessage() }}</span>
       </div>
     }
 
-    <!-- Type selector — big tap-target pills, much friendlier than a dropdown -->
-    <fieldset class="type-toggle" [disabled]="saving()">
-      <legend class="field-legend">What kind of transaction?</legend>
-      <div class="type-options" role="radiogroup" aria-label="Transaction type">
-        <button
-          type="button"
-          class="type-option"
-          [class.active]="form.type === 'expense'"
-          [attr.aria-pressed]="form.type === 'expense'"
-          (click)="setType('expense')"
-        >
-          <span class="type-icon expense" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <polyline points="19 12 12 19 5 12"></polyline>
-            </svg>
-          </span>
-          <span class="type-label">Money going out</span>
-          <span class="type-helper">e.g. groceries, petrol, rent</span>
-        </button>
-        <button
-          type="button"
-          class="type-option"
-          [class.active]="form.type === 'income'"
-          [attr.aria-pressed]="form.type === 'income'"
-          (click)="setType('income')"
-        >
-          <span class="type-icon income" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="19" x2="12" y2="5"></line>
-              <polyline points="5 12 12 5 19 12"></polyline>
-            </svg>
-          </span>
-          <span class="type-label">Money coming in</span>
-          <span class="type-helper">e.g. salary, gift, refund</span>
-        </button>
-      </div>
-    </fieldset>
-
-    <div class="form-group">
-      <label for="description">What was it for? <span class="req-mark" aria-hidden="true">*</span><span class="visually-hidden">required</span></label>
-      <input
-        id="description"
-        type="text"
-        [(ngModel)]="form.description"
-        name="description"
-        placeholder="e.g. Grocery shopping at Tesco"
-        autocomplete="off"
-        required
-        maxlength="120"
-        [disabled]="saving()"
-      >
-      <p class="field-hint">A short note so you remember what this was.</p>
-    </div>
-
-    <div class="form-group">
-      <label for="amount">How much? <span class="req-mark" aria-hidden="true">*</span><span class="visually-hidden">required</span></label>
-      <div class="currency-input">
-        <span class="currency-prefix" aria-hidden="true">$</span>
-        <input
-          id="amount"
-          type="number"
-          [(ngModel)]="form.amount"
-          name="amount"
-          placeholder="0.00"
-          min="0.01"
-          step="0.01"
-          inputmode="decimal"
-          required
-          [disabled]="saving()"
-        >
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="category">Category <span class="req-mark" aria-hidden="true">*</span><span class="visually-hidden">required</span></label>
-      @if (loadingCategories()) {
-        <div class="select-skeleton" aria-busy="true" aria-label="Loading categories"></div>
-      } @else {
-        <div class="select-wrapper">
-          <select id="category" [(ngModel)]="form.category" name="category" required [disabled]="saving() || filteredCategories.length === 0">
-            @if (filteredCategories.length === 0) {
-              <option value="" disabled>No categories available</option>
-            }
-            @for (cat of filteredCategories; track cat.id) {
-              <option [value]="cat.name">{{ cat.name }}</option>
-            }
-          </select>
-          <svg class="select-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-      }
-      <p class="field-hint">Pick the closest match. You can change categories later in Settings.</p>
-    </div>
-
-    @if (form.type === 'expense') {
-      <div class="form-group">
-        <label for="classification">Is this a need, want, or saving?</label>
-        <div class="select-wrapper">
-          <select
-            id="classification"
-            [(ngModel)]="form.classification"
-            name="classification"
-            [disabled]="saving()"
-          >
-            <option value="">Use what's normal for this category</option>
-            <option value="Need">Need (something I have to pay for)</option>
-            <option value="Want">Want (something I chose to buy)</option>
-            <option value="Savings">Savings (money I'm setting aside)</option>
-          </select>
-          <svg class="select-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-        <p class="field-hint">Optional. Helps group your spending into the 50/30/20 plan.</p>
-      </div>
-    }
-
-    <div class="form-group">
-      <label for="date">When did this happen? <span class="req-mark" aria-hidden="true">*</span><span class="visually-hidden">required</span></label>
-      <input
-        id="date"
-        type="date"
-        [(ngModel)]="form.date"
-        name="date"
-        required
-        [disabled]="saving()"
-      >
-      <p class="field-hint">Today is filled in by default. Change it if this is from another day.</p>
-    </div>
-
-    <div class="form-actions">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        (click)="router.navigate(['/transactions'])"
-        [disabled]="saving()"
-      >Cancel</button>
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="saving() || loadingCategories() || txForm.invalid"
-      >
-        @if (saving()) {
-          <span class="btn-spinner" aria-hidden="true"></span>
-          <span>Saving…</span>
+    <!-- ===== LEFT PANEL — Category picker ===== -->
+    <aside class="add-stage-left">
+      <div class="cat-panel">
+        <div class="field-label-tiny">Category</div>
+        @if (loadingCategories()) {
+          <div class="select-skeleton" aria-busy="true" aria-label="Loading categories"></div>
         } @else {
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          <span>Save transaction</span>
+          <div class="cat-panel-grid">
+            <button *ngFor="let cat of filteredCategories"
+                    type="button"
+                    class="cat-tile"
+                    [class.on]="form.category === cat.name"
+                    (click)="form.category = cat.name"
+                    [disabled]="saving()">
+              <div class="cat-tile-icon" [class]="categorySlug(cat.name)" aria-hidden="true" [innerHTML]="categoryIcon(cat.name)"></div>
+              <div class="cat-tile-name">{{ cat.name }}</div>
+            </button>
+          </div>
         }
-      </button>
+      </div>
+    </aside>
+
+    <!-- ===== RIGHT PANEL — Type + Amount + Description + When ===== -->
+    <div class="add-stage-right">
+      <div class="amount-stage">
+        <div class="amount-stage-toggle" role="radiogroup" aria-label="Transaction type">
+          <button type="button"
+                  class="type-chip"
+                  data-type="expense"
+                  [class.on]="form.type === 'expense'"
+                  [attr.aria-pressed]="form.type === 'expense'"
+                  (click)="setType('expense')"
+                  [disabled]="saving()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            Expense
+          </button>
+          <button type="button"
+                  class="type-chip"
+                  data-type="income"
+                  [class.on]="form.type === 'income'"
+                  [attr.aria-pressed]="form.type === 'income'"
+                  (click)="setType('income')"
+                  [disabled]="saving()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            Income
+          </button>
+        </div>
+
+        <div class="amount-display" [class.has-value]="(form.amount ?? 0) > 0">
+          <span class="amount-currency">$</span>
+          <input class="amount-input"
+                 #amountFieldEl
+                 type="text"
+                 inputmode="decimal"
+                 autocomplete="off"
+                 [(ngModel)]="amountInput"
+                 name="amount"
+                 (input)="onAmountInput()"
+                 placeholder="0"
+                 aria-label="Amount"
+                 [disabled]="saving()">
+          <span class="amount-decimals" [class.dim]="!hasAmountCents">{{ amountCentsDisplay }}</span>
+        </div>
+        <div class="amount-helper" [class.warn]="amountHelperWarn">{{ amountHelperText }}</div>
+
+        <div class="amount-quick">
+          <button *ngFor="let q of quickAmounts"
+                  type="button"
+                  class="quick-chip"
+                  [class.on]="parsedAmount === q"
+                  (click)="setQuickAmount(q)"
+                  [disabled]="saving()">${{ q | number }}</button>
+        </div>
+      </div>
+
+      <div class="add-details">
+        <div class="add-detail-card">
+          <div class="field-label-tiny">What was it for?</div>
+          <input class="text-input"
+                 type="text"
+                 [(ngModel)]="form.description"
+                 name="description"
+                 placeholder="e.g. Tesco — weekly groceries"
+                 autocomplete="off"
+                 maxlength="120"
+                 required
+                 [disabled]="saving()">
+        </div>
+        <div class="add-detail-card">
+          <div class="field-label-tiny">When?</div>
+          <div class="date-shortcuts">
+            <button type="button" class="date-chip"
+                    [class.on]="dateShortcut === 'today'"
+                    (click)="setDateShortcut('today')"
+                    [disabled]="saving()">Today</button>
+            <button type="button" class="date-chip"
+                    [class.on]="dateShortcut === 'yesterday'"
+                    (click)="setDateShortcut('yesterday')"
+                    [disabled]="saving()">Yesterday</button>
+            <button type="button" class="date-chip date-chip-pick"
+                    [class.on]="dateShortcut === 'pick'"
+                    (click)="openCustomDate()"
+                    [disabled]="saving()">
+              <ng-container *ngIf="dateShortcut !== 'pick'">Pick a day…</ng-container>
+              <ng-container *ngIf="dateShortcut === 'pick'">{{ form.date | date:'mediumDate' }}</ng-container>
+            </button>
+            <input #datePickerEl
+                   type="date"
+                   class="date-picker-hidden"
+                   [(ngModel)]="form.date"
+                   name="date"
+                   (change)="onCustomDate()"
+                   [disabled]="saving()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky save bar -->
+    <div class="add-savebar" [class.ready]="formReady">
+      <div class="add-savebar-status">
+        <ng-container *ngIf="formReady">
+          <strong>All set</strong> — tap save to record it
+        </ng-container>
+        <ng-container *ngIf="!formReady">
+          <strong>Almost there</strong> — still need {{ missingPiecesText }}
+        </ng-container>
+      </div>
+      <div class="add-savebar-actions">
+        <button type="button" class="btn btn-ghost" (click)="router.navigate(['/transactions'])" [disabled]="saving()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!formReady || saving() || loadingCategories()">
+          @if (saving()) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <span>Saving…</span>
+          } @else {
+            <span>Save transaction</span>
+          }
+        </button>
+      </div>
     </div>
   </form>
 </div>

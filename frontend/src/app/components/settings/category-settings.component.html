@@ -1,75 +1,80 @@
 <div class="category-settings">
   <header class="page-head">
-    <h1>Categories</h1>
-    <p class="lede">Set what kind of spending each category is, and an optional monthly limit. Changes are saved together when you're ready.</p>
+    <div>
+      <div class="page-eyebrow">
+        {{ rows().length }} categories
+        @if (dirtyCount() > 0) {
+          · {{ dirtyCount() }} unsaved {{ dirtyCount() === 1 ? 'change' : 'changes' }}
+        }
+      </div>
+      <h1 class="page-title">Categories.</h1>
+      <p class="page-meta">Tap any category to set what kind of spending it is, and an optional monthly limit.</p>
+    </div>
   </header>
 
-  <div *ngIf="loading()" class="state-msg">Loading your categories…</div>
+  <div *ngIf="loading()" class="state-msg">Loading categories…</div>
   <div *ngIf="loadError()" class="state-msg error" role="alert">{{ loadError() }}</div>
 
   <ng-container *ngIf="!loading() && !loadError()">
-    <section class="card">
-      <ul class="cat-list" role="list">
-        <li *ngFor="let row of rows(); trackBy: trackById" class="cat-row" [class.dirty]="isRowDirty(row)" [class.has-error]="row.rowError">
-          <div class="cat-name-cell">
-            <span class="cat-name">{{ row.entry.name }}</span>
-            <span class="cat-name-sub" *ngIf="isRowDirty(row)">unsaved</span>
-          </div>
+    <div class="cat-tiles">
+      <div *ngFor="let row of rows(); trackBy: trackById"
+           class="cat-card"
+           [class.dirty]="isRowDirty(row)"
+           [class.has-error]="row.rowError">
 
-          <div class="cat-class-cell">
-            <span class="field-label">What kind?</span>
-            <div class="select-wrapper">
-              <select [(ngModel)]="row.classificationInput" [attr.aria-label]="'Type for ' + row.entry.name">
-                <option value="Need">Need</option>
-                <option value="Want">Want</option>
-                <option value="Savings">Savings</option>
-              </select>
-              <svg class="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-          </div>
+        <div class="cat-card-head">
+          <div class="cat-tile-icon" [class]="categorySlug(row.entry.name)" aria-hidden="true" [innerHTML]="categoryIcon(row.entry.name)"></div>
+          <div class="cat-card-name">{{ row.entry.name }}</div>
+        </div>
 
-          <div class="cat-cap-cell">
-            <span class="field-label">Monthly limit</span>
-            <div class="currency-input">
-              <span class="currency-prefix" aria-hidden="true">$</span>
-              <input
-                type="number" min="0" step="0.01"
-                [(ngModel)]="row.capInput"
-                placeholder="No limit"
-                [attr.aria-label]="'Monthly limit for ' + row.entry.name">
-            </div>
-            <p *ngIf="row.rowError" class="row-error">{{ row.rowError }}</p>
-          </div>
-        </li>
-      </ul>
-    </section>
+        <div class="cat-class-pills" role="radiogroup" [attr.aria-label]="'Type for ' + row.entry.name">
+          <button type="button" class="cat-class-pill"
+                  [class.on]="row.classificationInput === 'Need'"
+                  (click)="row.classificationInput = 'Need'">Need</button>
+          <button type="button" class="cat-class-pill"
+                  [class.on]="row.classificationInput === 'Want'"
+                  (click)="row.classificationInput = 'Want'">Want</button>
+          <button type="button" class="cat-class-pill"
+                  [class.on]="row.classificationInput === 'Savings'"
+                  (click)="row.classificationInput = 'Savings'">Save</button>
+        </div>
 
-    <div class="footer-bar" [class.is-active]="dirtyCount() > 0">
-      <div class="footer-status">
-        <span *ngIf="dirtyCount() === 0">No changes yet — adjust a row above to save.</span>
-        <span *ngIf="dirtyCount() > 0">
-          <strong>{{ dirtyCount() }}</strong> {{ dirtyCount() === 1 ? 'change' : 'changes' }} ready to save
-        </span>
+        <div class="cat-cap-row">
+          <span class="cat-cap-pre">$</span>
+          <input class="cat-cap-input"
+                 type="number" min="0" step="0.01"
+                 [(ngModel)]="row.capInput"
+                 placeholder="No limit"
+                 [attr.aria-label]="'Monthly limit for ' + row.entry.name">
+          <span class="no-limit-tip">cap / month</span>
+        </div>
+        <p *ngIf="row.rowError" class="row-error">{{ row.rowError }}</p>
       </div>
-      <div class="footer-actions">
-        <button type="button" class="btn btn-secondary" (click)="resetAll()" [disabled]="dirtyCount() === 0 || saving()">Discard changes</button>
+    </div>
+
+    <div class="save-bar" [class.is-active]="dirtyCount() > 0">
+      <div class="save-bar-text">
+        @if (dirtyCount() === 0) {
+          No changes yet — adjust a row above to save.
+        } @else {
+          <strong>{{ dirtyCount() }}</strong>
+          {{ dirtyCount() === 1 ? 'change' : 'changes' }} pending
+        }
+      </div>
+      <div class="save-bar-actions">
+        <button type="button" class="btn btn-ghost" (click)="resetAll()" [disabled]="dirtyCount() === 0 || saving()">Discard</button>
         <button type="button" class="btn btn-primary" (click)="saveAll()" [disabled]="dirtyCount() === 0 || saving()">
           @if (saving()) {
             <span class="btn-spinner" aria-hidden="true"></span>
             <span>Saving…</span>
           } @else {
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
             <span>Save changes</span>
           }
         </button>
       </div>
     </div>
 
-    <div *ngIf="saveError()" class="save-error" role="alert">{{ saveError() }}</div>
-    <div *ngIf="savedFlash()" class="save-success" role="status" aria-live="polite">All changes saved.</div>
+    <div *ngIf="saveError()" class="save-msg error" role="alert">{{ saveError() }}</div>
+    <div *ngIf="savedFlash()" class="save-msg ok" role="status" aria-live="polite">All changes saved.</div>
   </ng-container>
 </div>

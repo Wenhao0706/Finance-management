@@ -25,7 +25,26 @@ export class BudgetSettingsComponent implements OnInit {
   wantsPctInput: number = 30;
   savingsPctInput: number = 20;
 
+  // Tracks which preset card is "Active" — derived from the percentages
+  // when data loads, but also set explicitly when the user clicks a card.
+  activePreset: 'balanced' | 'saver' | 'conservative' | 'custom' = 'balanced';
+
   constructor(private api: ApiService) {}
+
+  applyPreset(p: 'balanced' | 'saver' | 'conservative' | 'custom'): void {
+    this.activePreset = p;
+    if (p === 'balanced')      { this.needsPctInput = 50; this.wantsPctInput = 30; this.savingsPctInput = 20; }
+    else if (p === 'saver')    { this.needsPctInput = 50; this.wantsPctInput = 20; this.savingsPctInput = 30; }
+    else if (p === 'conservative') { this.needsPctInput = 60; this.wantsPctInput = 25; this.savingsPctInput = 15; }
+    // 'custom' leaves the inputs as-is — user edits the numbers directly
+  }
+
+  private detectPreset(needs: number, wants: number, savings: number): typeof this.activePreset {
+    if (needs === 50 && wants === 30 && savings === 20) return 'balanced';
+    if (needs === 50 && wants === 20 && savings === 30) return 'saver';
+    if (needs === 60 && wants === 25 && savings === 15) return 'conservative';
+    return 'custom';
+  }
 
   ngOnInit(): void {
     const now = new Date();
@@ -41,9 +60,10 @@ export class BudgetSettingsComponent implements OnInit {
       next: (s) => {
         this.snapshot = s;
         this.expectedIncomeInput = s.expectedIncomeIsExplicit ? String(s.expectedIncome) : '';
-        this.needsPctInput = Math.round(s.percentages.needs * 100);
-        this.wantsPctInput = Math.round(s.percentages.wants * 100);
+        this.needsPctInput   = Math.round(s.percentages.needs   * 100);
+        this.wantsPctInput   = Math.round(s.percentages.wants   * 100);
         this.savingsPctInput = Math.round(s.percentages.savings * 100);
+        this.activePreset = this.detectPreset(this.needsPctInput, this.wantsPctInput, this.savingsPctInput);
         this.loading.set(false);
       },
       error: () => {
