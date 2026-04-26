@@ -172,8 +172,8 @@ namespace FinanceManagement.API.Migrations
 
                     b.Property<string>("Recipient")
                         .IsRequired()
-                        .HasMaxLength(320)
-                        .HasColumnType("character varying(320)");
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
 
                     b.Property<DateTime>("SentAt")
                         .HasColumnType("timestamp with time zone");

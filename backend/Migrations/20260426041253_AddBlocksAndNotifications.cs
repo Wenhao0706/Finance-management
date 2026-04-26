@@ -32,7 +32,7 @@ namespace FinanceManagement.API.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Kind = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    Recipient = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false),
+                    Recipient = table.Column<string>(type: "character varying(254)", maxLength: 254, nullable: false),
                     Key = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     SentAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },

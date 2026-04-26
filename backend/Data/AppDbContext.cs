@@ -58,7 +58,7 @@ public class AppDbContext : DbContext
         {
             b.HasIndex(x => new { x.Kind, x.Recipient, x.Key, x.SentAt });
             b.Property(x => x.Kind).HasMaxLength(32).IsRequired();
-            b.Property(x => x.Recipient).HasMaxLength(320).IsRequired();
+            b.Property(x => x.Recipient).HasMaxLength(254).IsRequired();  // RFC 5321 max email length, matches LoginAttempt.Email
             b.Property(x => x.Key).HasMaxLength(64).IsRequired();
         });
     }
