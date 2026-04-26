@@ -8,7 +8,7 @@
 #   - Single-machine self-hosted setup — no need for image registry
 #   - Polling interval of 5 minutes is a good balance: fast enough to feel
 #     "automatic" without spamming GitHub
-FROM docker:27-cli-alpine3.20
+FROM docker:27-cli
 
 RUN apk add --no-cache git bash
 
