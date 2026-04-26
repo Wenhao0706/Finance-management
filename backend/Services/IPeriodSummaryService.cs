@@ -14,7 +14,8 @@ public sealed record PeriodSummary(
     decimal NetFlow,
     decimal RunningBalance,
     IReadOnlyList<CategoryAmount> CategoryBreakdown,
-    IReadOnlyList<MonthlyEntry>? MonthlyBreakdown);
+    IReadOnlyList<MonthlyEntry>? MonthlyBreakdown,
+    BudgetSnapshot? Budget);   // NEW — null for yearly view, populated for monthly
 
 public sealed record PeriodInfo(int Year, int? Month);
 

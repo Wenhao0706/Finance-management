@@ -8,8 +8,13 @@ public sealed class PeriodSummaryService : IPeriodSummaryService
     private const string SavingsCategoryName = "Savings";
 
     private readonly AppDbContext _db;
+    private readonly IBudgetService _budgetService;
 
-    public PeriodSummaryService(AppDbContext db) => _db = db;
+    public PeriodSummaryService(AppDbContext db, IBudgetService budgetService)
+    {
+        _db = db;
+        _budgetService = budgetService;
+    }
 
     public async Task<PeriodSummary> GetMonthlyAsync(string userId, int year, int month, CancellationToken ct)
     {
@@ -18,6 +23,7 @@ public sealed class PeriodSummaryService : IPeriodSummaryService
 
         var (income, expenses, savings, breakdown) = await ComputeWindowAsync(userId, periodStart, periodEnd, ct);
         var balance = await ComputeRunningBalanceAsync(userId, periodEnd, ct);
+        var budgetSnapshot = await _budgetService.GetSnapshotAsync(userId, year, month, ct);
 
         return new PeriodSummary(
             new PeriodInfo(year, month),
@@ -25,7 +31,8 @@ public sealed class PeriodSummaryService : IPeriodSummaryService
             NetFlow: income - expenses,
             RunningBalance: balance,
             CategoryBreakdown: breakdown,
-            MonthlyBreakdown: null);
+            MonthlyBreakdown: null,
+            Budget: budgetSnapshot);
     }
 
     public async Task<PeriodSummary> GetYearlyAsync(string userId, int year, CancellationToken ct)
@@ -43,7 +50,8 @@ public sealed class PeriodSummaryService : IPeriodSummaryService
             NetFlow: income - expenses,
             RunningBalance: balance,
             CategoryBreakdown: breakdown,
-            MonthlyBreakdown: monthly);
+            MonthlyBreakdown: monthly,
+            Budget: null);
     }
 
     private async Task<(decimal income, decimal expenses, decimal savings, IReadOnlyList<CategoryAmount> breakdown)>

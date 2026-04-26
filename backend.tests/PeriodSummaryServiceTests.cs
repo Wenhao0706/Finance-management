@@ -2,6 +2,7 @@ using FinanceManagement.API.Data;
 using FinanceManagement.API.Models;
 using FinanceManagement.API.Services;
 using FinanceManagement.API.Tests.TestHelpers;
+using Moq;
 
 namespace FinanceManagement.API.Tests;
 
@@ -11,6 +12,24 @@ public class PeriodSummaryServiceTests : IDisposable
     private const string Uid = "user-1";
 
     public void Dispose() => _dbFactory.Dispose();
+
+    private static IBudgetService FakeBudgetService()
+    {
+        var m = new Mock<IBudgetService>();
+        m.Setup(s => s.GetSnapshotAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string uid, int y, int mo, CancellationToken _) =>
+                new BudgetSnapshot(
+                    new PeriodInfo(y, mo),
+                    ExpectedIncome: 0m,
+                    ExpectedIncomeIsExplicit: false,
+                    Percentages: new BudgetPercentages(0.5m, 0.3m, 0.2m),
+                    Buckets: new BucketsUsage(
+                        new BucketUsage(0,0,0,0,0,"ok"),
+                        new BucketUsage(0,0,0,0,0,"ok"),
+                        new BucketUsage(0,0,0,0,0,"ok")),
+                    CategoryCaps: Array.Empty<CategoryCapUsage>()));
+        return m.Object;
+    }
 
     private static void AddTxn(AppDbContext db, string type, string category, decimal amount, DateTime date, string userId = Uid)
     {
@@ -29,7 +48,7 @@ public class PeriodSummaryServiceTests : IDisposable
     public async Task EmptyUser_ReturnsAllZeros()
     {
         using var db = _dbFactory.Create();
-        var svc = new PeriodSummaryService(db);
+        var svc = new PeriodSummaryService(db, FakeBudgetService());
 
         var s = await svc.GetMonthlyAsync(Uid, 2026, 4, CancellationToken.None);
 
@@ -51,7 +70,7 @@ public class PeriodSummaryServiceTests : IDisposable
         AddTxn(db, "income", "Salary", 3000m, new DateTime(2026, 4, 15, 0, 0, 0, DateTimeKind.Utc));
         await db.SaveChangesAsync();
 
-        var svc = new PeriodSummaryService(db);
+        var svc = new PeriodSummaryService(db, FakeBudgetService());
         var s = await svc.GetMonthlyAsync(Uid, 2026, 4, CancellationToken.None);
 
         Assert.Equal(3000m, s.Income);
@@ -71,7 +90,7 @@ public class PeriodSummaryServiceTests : IDisposable
         AddTxn(db, "expense", "Savings", 500m, new DateTime(2026, 4, 15, 0, 0, 0, DateTimeKind.Utc));
         await db.SaveChangesAsync();
 
-        var svc = new PeriodSummaryService(db);
+        var svc = new PeriodSummaryService(db, FakeBudgetService());
         var s = await svc.GetMonthlyAsync(Uid, 2026, 4, CancellationToken.None);
 
         Assert.Equal(3000m, s.Income);
@@ -95,7 +114,7 @@ public class PeriodSummaryServiceTests : IDisposable
         AddTxn(db, "expense", "Food & Dining", 800m, new DateTime(2026, 4, 15, 0, 0, 0, DateTimeKind.Utc));
         await db.SaveChangesAsync();
 
-        var svc = new PeriodSummaryService(db);
+        var svc = new PeriodSummaryService(db, FakeBudgetService());
         var march = await svc.GetMonthlyAsync(Uid, 2026, 3, CancellationToken.None);
         var april = await svc.GetMonthlyAsync(Uid, 2026, 4, CancellationToken.None);
 
@@ -113,7 +132,7 @@ public class PeriodSummaryServiceTests : IDisposable
         AddTxn(db, "expense", "Transportation", 100m, new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc));
         await db.SaveChangesAsync();
 
-        var svc = new PeriodSummaryService(db);
+        var svc = new PeriodSummaryService(db, FakeBudgetService());
         var s = await svc.GetMonthlyAsync(Uid, 2026, 4, CancellationToken.None);
 
         var totalPct = s.CategoryBreakdown.Sum(c => c.Percentage);
@@ -127,7 +146,7 @@ public class PeriodSummaryServiceTests : IDisposable
         AddTxn(db, "income", "Salary", 1000m, new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc));
         await db.SaveChangesAsync();
 
-        var svc = new PeriodSummaryService(db);
+        var svc = new PeriodSummaryService(db, FakeBudgetService());
         var future = await svc.GetMonthlyAsync(Uid, 2099, 1, CancellationToken.None);
 
         Assert.Equal(0m, future.Income);
@@ -143,7 +162,7 @@ public class PeriodSummaryServiceTests : IDisposable
         AddTxn(db, "income", "Salary", 100m, new DateTime(2026, 4, 30, 23, 59, 0, DateTimeKind.Utc));
         await db.SaveChangesAsync();
 
-        var svc = new PeriodSummaryService(db);
+        var svc = new PeriodSummaryService(db, FakeBudgetService());
         var april = await svc.GetMonthlyAsync(Uid, 2026, 4, CancellationToken.None);
 
         Assert.Equal(100m, april.Income);  // boundary correctness — uses < periodEnd not <=
@@ -163,7 +182,7 @@ public class PeriodSummaryServiceTests : IDisposable
         AddTxn(db, "expense", "Housing", 200m, new DateTime(2026, 10, 5, 0, 0, 0, DateTimeKind.Utc));
         await db.SaveChangesAsync();
 
-        var svc = new PeriodSummaryService(db);
+        var svc = new PeriodSummaryService(db, FakeBudgetService());
         var year = await svc.GetYearlyAsync(Uid, 2026, CancellationToken.None);
 
         Assert.Equal(1200m, year.Income);
