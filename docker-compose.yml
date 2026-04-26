@@ -81,5 +81,29 @@ services:
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN must be set in .env}
     restart: unless-stopped
 
+  # Auto-deploy agent — polls origin/main every POLL_INTERVAL_SECONDS,
+  # pulls + rebuilds backend + frontend when new commits land. Replaces
+  # the manual `docker compose up -d --build` workflow on every push.
+  #
+  # Security note: the docker.sock mount gives this container full Docker
+  # access (equivalent to root on host). This is the standard pattern for
+  # Watchtower-style auto-deployers; the tradeoff is acceptable for a
+  # single-user laptop. The container itself is NOT exposed to any network
+  # — it only talks to the host docker daemon and to GitHub over HTTPS.
+  deploy-agent:
+    build:
+      context: ./deploy-agent
+      dockerfile: Dockerfile
+    container_name: finance-deploy-agent
+    environment:
+      POLL_INTERVAL_SECONDS: "${DEPLOY_POLL_INTERVAL_SECONDS:-300}"
+      GIT_BRANCH: "${DEPLOY_GIT_BRANCH:-main}"
+      COMPOSE_SERVICES: "backend frontend"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/workspace
+    working_dir: /workspace
+    restart: unless-stopped
+
 volumes:
   postgres-data:
