@@ -38,8 +38,18 @@ public class LockoutService : ILockoutService
     private static readonly TimeSpan Window = TimeSpan.FromMinutes(15);
 
     private readonly AppDbContext _db;
+    private readonly ILockoutEscalationDetector? _escalator;
+    private readonly ILogger<LockoutService>? _logger;
 
-    public LockoutService(AppDbContext db) => _db = db;
+    public LockoutService(
+        AppDbContext db,
+        ILockoutEscalationDetector? escalator = null,
+        ILogger<LockoutService>? logger = null)
+    {
+        _db = db;
+        _escalator = escalator;
+        _logger = logger;
+    }
 
     public async Task<LockoutDecision> CheckAsync(string email, string ipAddress, CancellationToken cancellationToken = default)
     {
@@ -94,5 +104,17 @@ public class LockoutService : ILockoutService
         });
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        if (!success && _escalator is not null)
+        {
+            try
+            {
+                await _escalator.OnFailureRecordedAsync(email, ipAddress, userAgent, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Lockout escalation detector threw — lockout itself succeeded");
+            }
+        }
     }
 }
