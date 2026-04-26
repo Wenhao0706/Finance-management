@@ -290,12 +290,15 @@
   display: flex;
   flex-direction: column;
 }
-/* The input/chips sit just below their label with normal spacing.
-   The card still stretches to match the taller sibling (date card)
-   in the grid above, but the empty space falls AFTER the input
-   instead of being inserted between label and input. Previously
-   margin-top:auto pushed the input to the card's bottom edge,
-   which read as a confusing gap between label and field. */
+/* The input/chips sit just below their label with a small breathing
+   gap (0.5rem on top of the label's own 0.55rem margin-bottom →
+   ~1rem total). The card still stretches to match the taller
+   sibling (date card) in the grid above, but the empty space falls
+   AFTER the input instead of being inserted between label and
+   input. Previously margin-top:auto pushed the input to the card's
+   bottom edge, which read as a confusing gap. */
+.add-detail-card .text-input,
+.add-detail-card .date-shortcuts { margin-top: 0.5rem; }
 
 .text-input {
   width: 100%;
