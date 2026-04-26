@@ -1,38 +1,51 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
-import { Summary } from '../../models/transaction.model';
+import { PeriodSummary } from '../../models/summary.model';
 import { Transaction } from '../../models/transaction.model';
+import { PeriodSummaryComponent } from './period-summary.component';
+import { CategoryBarsComponent } from './category-bars.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PeriodSummaryComponent, CategoryBarsComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
-  summary: Summary | null = null;
+  summary: PeriodSummary | null = null;
   recentTransactions: Transaction[] | null = null;
   loading = signal(true);
   loadError = signal('');
 
-  constructor(private api: ApiService) {}
+  year!: number;
+  month!: number;
+
+  constructor(
+    private api: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
-    this.load();
+    this.route.paramMap.subscribe(params => {
+      const yearParam = params.get('year');
+      const monthParam = params.get('month');
+      const now = new Date();
+      this.year = yearParam ? Number(yearParam) : now.getFullYear();
+      this.month = monthParam ? Number(monthParam) : now.getMonth() + 1;
+      this.load();
+    });
   }
 
   load(): void {
     this.loading.set(true);
     this.loadError.set('');
-    // forkJoin so the dashboard renders all-at-once instead of one card at
-    // a time (which looked janky when summary was fast and transactions
-    // were slow).
     forkJoin({
-      summary: this.api.getSummary(),
+      summary: this.api.getMonthSummary(this.year, this.month),
       transactions: this.api.getTransactions(),
     }).subscribe({
       next: ({ summary, transactions }) => {
@@ -48,6 +61,29 @@ export class DashboardComponent implements OnInit {
         else if (status >= 500)  this.loadError.set('Server error. Try again in a moment.');
         else                     this.loadError.set('Could not load your dashboard.');
       },
+    });
+  }
+
+  goPrev(): void {
+    let y = this.year, m = this.month - 1;
+    if (m < 1) { m = 12; y -= 1; }
+    this.router.navigate(['/dashboard/month', y, m]);
+  }
+
+  goNext(): void {
+    let y = this.year, m = this.month + 1;
+    if (m > 12) { m = 1; y += 1; }
+    this.router.navigate(['/dashboard/month', y, m]);
+  }
+
+  goYearView(): void {
+    this.router.navigate(['/dashboard/year', this.year]);
+  }
+
+  get monthLabel(): string {
+    return new Date(this.year, this.month - 1, 1).toLocaleString('en-US', {
+      month: 'long',
+      year: 'numeric',
     });
   }
 }

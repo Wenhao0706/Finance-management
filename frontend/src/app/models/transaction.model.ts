@@ -7,9 +7,3 @@ export interface Transaction {
   date: string;
   createdAt: string;
 }
-
-export interface Summary {
-  totalIncome: number;
-  totalExpense: number;
-  balance: number;
-}
