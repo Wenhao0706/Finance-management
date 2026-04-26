@@ -5,9 +5,14 @@ $z-topbar: 60;
 $z-toast: 70;
 
 .app-layout {
+  --sidebar-width: 260px;
   display: flex;
   min-height: 100vh;
   position: relative;
+  // Reserve space on the left for the fixed-position sidebar so the
+  // .content column starts where the sidebar ends (rather than under it).
+  // Mobile resets this to 0 in the <=768px media query below.
+  padding-left: var(--sidebar-width);
 }
 
 // ====== Mobile top bar ======
@@ -59,22 +64,24 @@ $z-toast: 70;
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 // ====== Sidebar ======
-// Stays pinned to the viewport on desktop so the user can always reach
-// the sign-out button without scrolling, regardless of how long the page
-// content is. The internal column scrolls if the nav itself ever
-// overflows (rare on desktop but possible on shorter laptops).
+// Pinned to the viewport on desktop with position:fixed so its contents
+// never move when the user scrolls the main content. The fixed approach
+// is more robust than position:sticky inside a flex layout (sticky +
+// overflow-y on the same element exhibits a Chrome layout glitch where
+// the inner items appear to track the page scroll). The .content column
+// is offset by --sidebar-width via the parent layout so it doesn't
+// disappear under the sidebar.
 .sidebar {
-  width: 260px;
+  width: var(--sidebar-width, 260px);
   background: var(--color-sidebar-bg);
   color: var(--color-sidebar-text);
   padding: 1.25rem 0 1rem;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
-  align-self: flex-start;
-  height: 100vh;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 30;
   overflow-y: auto;
   // Subtle inner scrollbar styling (WebKit) so it doesn't fight the
   // dark sidebar surface when content overflows.
@@ -279,7 +286,10 @@ $z-toast: 70;
 // MOBILE — sidebar becomes a drawer
 // ============================================
 @media (max-width: 768px) {
-  .app-layout { flex-direction: column; }
+  .app-layout {
+    flex-direction: column;
+    padding-left: 0;            // mobile: drawer overlays content, no offset
+  }
   .mobile-topbar { display: flex; }
 
   .sidebar {
