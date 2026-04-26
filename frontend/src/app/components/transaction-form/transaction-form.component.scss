@@ -349,7 +349,13 @@
 }
 
 // ===== Sticky save bar
+// The bar lives inside the 2-col .add-stage grid (left = category,
+// right = amount/details). Without an explicit span it lands in
+// column 1 and reads as anchored to the left panel only. Spanning
+// it across both columns makes it a true page-width footer that
+// matches the save bars on the other pages.
 .add-savebar {
+  grid-column: 1 / -1;
   position: sticky;
   bottom: 1rem;
   z-index: 5;
