@@ -145,6 +145,11 @@
 .span-12 { grid-column: span 12; }
 .span-7  { grid-column: span 7; }
 .span-5  { grid-column: span 5; }
+// Donut is span-7 wide AND occupies two rows — its tall body
+// is matched on the right by a stack of Money out + Saved this
+// month, both span-5. Without the row-span the layout collapsed
+// into a 2x2 of mismatched-height stat tiles.
+.row-span-2 { grid-row: span 2; }
 
 // ===== Hero
 .tile-hero {
