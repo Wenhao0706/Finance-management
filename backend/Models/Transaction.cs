@@ -10,4 +10,5 @@ public class Transaction
     public string Category { get; set; } = string.Empty;
     public DateTime Date { get; set; } = DateTime.UtcNow;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string? Classification { get; set; }   // "Need" | "Want" | "Savings" | null (use category default)
 }
