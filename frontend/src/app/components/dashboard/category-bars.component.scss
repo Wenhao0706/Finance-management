@@ -50,3 +50,15 @@
     }
   }
 }
+
+.cap-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  color: #666;
+  background: #f0f0f0;
+  padding: 1px 6px;
+  border-radius: 8px;
+  &.warn { background: #fff8e1; color: #8a6d00; }
+  &.over { background: #ffebee; color: #c62828; font-weight: 600; }
+}

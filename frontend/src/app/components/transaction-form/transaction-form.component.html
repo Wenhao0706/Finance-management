@@ -62,6 +62,23 @@
       }
     </div>
 
+    @if (form.type === 'expense') {
+      <div class="form-group">
+        <label for="classification">Need / Want / Savings (optional)</label>
+        <select
+          id="classification"
+          [(ngModel)]="form.classification"
+          name="classification"
+          [disabled]="saving()"
+        >
+          <option value="">(use category default)</option>
+          <option value="Need">Need</option>
+          <option value="Want">Want</option>
+          <option value="Savings">Savings</option>
+        </select>
+      </div>
+    }
+
     <div class="form-group">
       <label for="date" class="required">Date</label>
       <input

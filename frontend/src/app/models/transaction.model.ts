@@ -6,4 +6,5 @@ export interface Transaction {
   category: string;
   date: string;
   createdAt: string;
+  classification?: 'Need' | 'Want' | 'Savings' | null;
 }

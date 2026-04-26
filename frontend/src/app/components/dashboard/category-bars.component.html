@@ -2,7 +2,14 @@
   <h3>{{ title }}</h3>
   <div *ngIf="categories.length === 0" class="empty">No expenses recorded for this period.</div>
   <div *ngFor="let cat of categories" class="category-row">
-    <span class="cat-name">{{ cat.category }}</span>
+    <span class="cat-name">
+      {{ cat.category }}
+      <span *ngIf="capInfoFor(cat.category) as capInfo" class="cap-badge"
+            [class.warn]="capInfo.status === 'warn'"
+            [class.over]="capInfo.status === 'over'">
+        cap: {{ capInfo.monthlyCap | currency }} ({{ capInfo.pctUsed }}%)
+      </span>
+    </span>
     <span class="cat-amount">{{ cat.amount | currency }}</span>
     <div class="bar-track">
       <div class="bar-fill" [style.width.%]="cat.percentage"></div>

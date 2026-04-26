@@ -11,7 +11,12 @@
 
   <ng-container *ngIf="!loading() && !loadError() && summary">
     <app-period-summary [summary]="summary"></app-period-summary>
-    <app-category-bars [categories]="summary.categoryBreakdown"></app-category-bars>
+    <ng-container *ngIf="summary.budget">
+      <app-budget-banner [budget]="summary.budget"></app-budget-banner>
+      <app-bucket-bars [budget]="summary.budget"></app-bucket-bars>
+      <app-carry-in-line [budget]="summary.budget"></app-carry-in-line>
+    </ng-container>
+    <app-category-bars [categories]="summary.categoryBreakdown" [caps]="summary.budget?.categoryCaps ?? []"></app-category-bars>
 
     <div class="recent-transactions" *ngIf="recentTransactions">
       <h3>Recent transactions</h3>

@@ -28,7 +28,8 @@ export class TransactionFormComponent implements OnInit {
     amount: null as number | null,
     type: 'expense' as 'income' | 'expense',
     category: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    classification: '' as 'Need' | 'Want' | 'Savings' | ''
   };
 
   constructor(private api: ApiService, public router: Router) {}
@@ -66,7 +67,10 @@ export class TransactionFormComponent implements OnInit {
       amount: this.form.amount,
       type: this.form.type,
       category: this.form.category,
-      date: new Date(this.form.date).toISOString()
+      date: new Date(this.form.date).toISOString(),
+      classification: this.form.type === 'expense' && this.form.classification !== ''
+        ? this.form.classification
+        : null,
     }).subscribe({
       next: () => {
         // Defer navigation a tick so any focused element (Enter-on-button)

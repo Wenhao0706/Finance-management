@@ -7,11 +7,15 @@ import { PeriodSummary } from '../../models/summary.model';
 import { Transaction } from '../../models/transaction.model';
 import { PeriodSummaryComponent } from './period-summary.component';
 import { CategoryBarsComponent } from './category-bars.component';
+import { BucketBarsComponent } from './bucket-bars.component';
+import { CarryInLineComponent } from './carry-in-line.component';
+import { BudgetBannerComponent } from './budget-banner.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, PeriodSummaryComponent, CategoryBarsComponent],
+  imports: [CommonModule, RouterLink, PeriodSummaryComponent, CategoryBarsComponent,
+            BucketBarsComponent, CarryInLineComponent, BudgetBannerComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
