@@ -14,6 +14,7 @@ $z-fab:    25;
 }
 
 // ====== Mobile top bar ======
+// Brand + logo on the left, hamburger on the right (right-thumb reach).
 .mobile-topbar {
   display: none;
   position: sticky;
@@ -27,7 +28,44 @@ $z-fab:    25;
   border-bottom: 1px solid var(--glass-border);
   padding: 0 0.85rem;
   align-items: center;
+  justify-content: space-between;
   gap: 0.85rem;
+
+  .mobile-brand-block {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+  }
+  .mobile-brand-icon {
+    width: 32px; height: 32px;
+    background: conic-gradient(from 220deg at 50% 50%, var(--color-cyan), var(--color-indigo), var(--color-magenta), var(--color-cyan));
+    border-radius: 9px;
+    position: relative;
+    box-shadow: 0 0 14px rgba(34, 211, 238, 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg { color: var(--color-text); position: relative; z-index: 1; }
+  }
+  .mobile-brand-icon::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: var(--bg-1);
+    border-radius: 7px;
+  }
+
+  .mobile-brand {
+    font-weight: var(--weight-bold);
+    font-size: var(--font-size-md);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   .hamburger {
     background: var(--glass-bg);
@@ -40,14 +78,9 @@ $z-fab:    25;
     justify-content: center;
     cursor: pointer;
     transition: background var(--transition-fast);
+    flex-shrink: 0;
 
     &:hover { background: var(--glass-bg-hover); }
-  }
-
-  .mobile-brand {
-    font-weight: var(--weight-bold);
-    font-size: var(--font-size-md);
-    letter-spacing: -0.02em;
   }
 }
 
@@ -334,6 +367,19 @@ $z-fab:    25;
     box-shadow: var(--shadow-floating);
     width: 280px;
     max-width: 80vw;
+    // Stop scroll bounce from revealing empty space below the last
+    // nav item on iOS — and reserve space for the home-indicator
+    // bar via env(safe-area-inset-bottom) so the sign-out button
+    // isn't covered.
+    overscroll-behavior: contain;
+    padding-top: 1rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+
+    // Mobile already has a brand+logo row in the sticky topbar, so
+    // the in-drawer brand block is redundant (and on a 280px-wide
+    // drawer the original block was being cut off). Hide it; the
+    // drawer now begins straight with the Dashboard nav list.
+    .brand { display: none; }
   }
   .app-layout.sidebar-open {
     .sidebar  { transform: translateX(0); }

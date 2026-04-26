@@ -23,10 +23,7 @@
   font-weight: var(--weight-black);
   letter-spacing: -0.03em;
   line-height: 1.05;
-  background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--color-text);
 }
 
 .form-error {
@@ -217,14 +214,10 @@
   min-width: 1ch;
   max-width: 100%;
   text-align: left;
-  background: linear-gradient(180deg, #ffffff 30%, var(--color-cyan));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
   caret-color: var(--color-cyan);
   field-sizing: content;        // auto-grow with input length (Chrome/Edge/Safari TP)
 }
-.amount-input::placeholder { color: var(--color-text-dim); -webkit-text-fill-color: var(--color-text-dim); }
+.amount-input::placeholder { color: var(--color-text-dim); }
 .amount-decimals {
   font-size: 2rem;
   font-weight: var(--weight-semibold);

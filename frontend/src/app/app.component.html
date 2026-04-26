@@ -25,8 +25,20 @@
     }
 
     <div class="app-layout" [class.sidebar-open]="sidebarOpen()">
-      <!-- Mobile top bar (only visible <= 768px). Holds the hamburger + brand. -->
+      <!-- Mobile top bar (only visible <= 768px).
+           Brand + logo on the left, hamburger on the right —
+           thumb-reach pattern: the menu trigger sits on the side most
+           people tap with one hand. -->
       <header class="mobile-topbar">
+        <div class="mobile-brand-block">
+          <span class="mobile-brand-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </span>
+          <span class="mobile-brand">FinanceApp</span>
+        </div>
         <button
           type="button"
           class="hamburger"
@@ -48,7 +60,6 @@
             </svg>
           }
         </button>
-        <span class="mobile-brand">FinanceApp</span>
       </header>
 
       <!-- Backdrop — taps outside the open drawer to close. Mobile only. -->

@@ -9,10 +9,7 @@
     font-weight: var(--weight-black);
     letter-spacing: -0.03em;
     line-height: 1.05;
-    background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    color: var(--color-text);
   }
 
   // Period switcher (mirrors monthly dashboard for visual consistency)
