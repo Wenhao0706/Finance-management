@@ -73,6 +73,40 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddScoped<ILockoutService, LockoutService>();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IBackgroundTaskQueue>(_ => new BackgroundTaskQueue(capacity: 1000));
+builder.Services.AddHostedService<QueuedHostedService>();
+
+builder.Services.AddScoped<ILockoutEscalationDetector, LockoutEscalationDetector>();
+builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
+builder.Services.AddSingleton<IFirebaseUserLookup, FirebaseUserLookup>();
+
+var resendApiKey       = Environment.GetEnvironmentVariable("RESEND_API_KEY");
+var resendFromAddress  = Environment.GetEnvironmentVariable("RESEND_FROM_ADDRESS") ?? "noreply@manhou.de";
+var adminAlertEmail    = Environment.GetEnvironmentVariable("ADMIN_ALERT_EMAIL") ?? "wenhaoyuan02@gmail.com";
+var resetPasswordUrl   = Environment.GetEnvironmentVariable("RESET_PASSWORD_URL") ?? "https://finance.manhou.de/forgot-password";
+var alertsEnabled      = (Environment.GetEnvironmentVariable("LOCKOUT_ALERTS_ENABLED") ?? "true").Equals("true", StringComparison.OrdinalIgnoreCase);
+
+builder.Services.AddSingleton(new DispatcherOptions(adminAlertEmail, resetPasswordUrl));
+
+if (alertsEnabled && !string.IsNullOrWhiteSpace(resendApiKey))
+{
+    builder.Services.AddHttpClient(nameof(ResendEmailSender))
+        .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://api.resend.com/"));
+    builder.Services.AddSingleton<IEmailSender>(sp =>
+        new ResendEmailSender(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(ResendEmailSender)),
+            resendApiKey,
+            resendFromAddress,
+            sp.GetRequiredService<ILogger<ResendEmailSender>>()));
+    Console.WriteLine("INFO: Resend email sender registered.");
+}
+else
+{
+    builder.Services.AddSingleton<IEmailSender, NoOpEmailSender>();
+    Console.WriteLine("INFO: NoOpEmailSender registered (RESEND_API_KEY missing or LOCKOUT_ALERTS_ENABLED=false).");
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -157,6 +191,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
+app.UseMiddleware<IpBlockMiddleware>();
 app.UseMiddleware<FirebaseAuthMiddleware>();
 if (appCheckConfigured)
 {
