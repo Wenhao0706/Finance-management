@@ -1,0 +1,46 @@
+# Line-ending policy.
+#
+# This repo is worked on from Windows and from WSL against the same folder on an
+# NTFS drive. Without this file the two disagree: Windows Git checks files out as
+# CRLF while the blobs are LF, so Git on the WSL side reports every tracked file
+# as modified. That produced an 84-file, 22k-line diff containing no actual
+# changes, which buries real history and makes `git add -A` dangerous.
+#
+# `eol=lf` rather than plain `text=auto`: one representation everywhere is the
+# only thing that stops the two checkouts flip-flopping. .NET, Angular, Docker and
+# every editor in use here read LF fine.
+* text=auto eol=lf
+
+# Shell scripts MUST stay LF regardless of platform. deploy-agent/entrypoint.sh
+# and scripts/backup-postgres.sh run inside Linux containers, where a CRLF
+# shebang makes the interpreter path unresolvable and the container exits with a
+# "no such file or directory" that names a file which plainly exists.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.dockerignore text eol=lf
+
+# Tools that genuinely want CRLF on Windows.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.sln text eol=crlf
+
+# Never normalise these. Git's binary detection is good but an explicit rule
+# costs nothing and a corrupted image is silent until someone opens it.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.zip binary
+*.gz binary
+*.dll binary
+*.exe binary
+*.pfx binary
+*.snk binary
