@@ -48,3 +48,7 @@ Thumbs.db
 
 # Internal planning docs and specs — AI-assisted design artifacts, kept local only
 docs/superpowers/
+
+# Host-local compose overrides (absolute paths, per-machine env). Intentionally
+# untracked so the deploy-agent's "git pull --ff-only" can never conflict on it.
+docker-compose.override.yml
