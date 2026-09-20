@@ -66,6 +66,7 @@ if ($IsAdmin) {
     $Mode      = "unelevated (AtLogOn only -- the stack stays down until someone logs in)"
 }
 
+# Replace existing task if present.
 if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
     Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
 }

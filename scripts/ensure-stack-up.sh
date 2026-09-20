@@ -25,6 +25,10 @@
 #
 # Safe to run by hand without --hold to just converge the stack.
 set -u
+# Every compose invocation below is piped through `sed | tee` for logging.
+# Without pipefail the pipeline's status is tee's (always 0), so a failed
+# `compose up` reported success and the failure was never logged.
+set -o pipefail
 
 HOLD=0
 for arg in "$@"; do
@@ -42,7 +46,21 @@ log() {
     echo "$(date -u +%FT%TZ) [startup] $*" | tee -a "${LOG_FILE}"
 }
 
-cd "${PROJECT_DIR}" || { echo "cannot cd to ${PROJECT_DIR}"; exit 1; }
+# Never let an error path kill the keepalive. Under --hold this process IS what
+# holds the WSL distro open; exiting takes systemd, dockerd and all five
+# containers down until someone reboots or logs in. Holding with a degraded
+# stack is strictly better: the distro survives, and systemd plus
+# `restart: unless-stopped` can still recover on their own.
+die() {
+    log "ERROR: $*"
+    if [ "${HOLD}" -eq 1 ]; then
+        log "--hold requested; staying alive anyway rather than letting the distro be torn down"
+        exec sleep infinity
+    fi
+    exit 1
+}
+
+cd "${PROJECT_DIR}" || die "cannot cd to ${PROJECT_DIR}"
 
 log "starting; project=${PROJECT_DIR} hold=${HOLD}"
 
@@ -54,8 +72,7 @@ while true; do
         break
     fi
     if [ "${waited}" -ge "${DOCKER_WAIT_TIMEOUT_SECONDS}" ]; then
-        log "ERROR: docker unreachable after ${waited}s; giving up"
-        exit 1
+        die "docker unreachable after ${waited}s; giving up on bring-up"
     fi
     if [ $((waited % 30)) -eq 0 ]; then
         log "waiting for docker daemon... (${waited}s)"
@@ -76,6 +93,13 @@ sleep 5
 #    created while a bind source was missing has the bad path resolution baked
 #    into its config, and a plain restart just reuses it.
 mapfile -t ALL_SERVICES < <(docker compose config --services)
+# A bad compose file or an unset required var makes this print nothing and exit
+# 1. Left unchecked the loop below iterates zero times, DEAD stays empty and the
+# script logs "all services running" while the entire stack is down.
+if [ "${#ALL_SERVICES[@]}" -eq 0 ]; then
+    die "'docker compose config --services' returned no services — compose file invalid or a required env var is unset; cannot verify or heal anything"
+fi
+
 DEAD=()
 for svc in "${ALL_SERVICES[@]}"; do
     cid="$(docker compose ps -q "${svc}" 2>/dev/null)"

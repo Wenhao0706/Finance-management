@@ -25,6 +25,11 @@
 #   PROJECT_DIR            — absolute path of the repo, identical on the host
 #                            and in here (default: the working dir)
 set -eu
+# git/compose output is piped through `sed` for log prefixing. Without pipefail
+# the pipeline's status is sed's (always 0), so a failed fetch/pull/rebuild was
+# reported as success — "rebuild complete" was logged even when the build blew
+# up. Every pipeline below sits in an `if`, so pipefail cannot kill the loop.
+set -o pipefail
 
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-300}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
@@ -35,7 +40,12 @@ cd "${PROJECT_DIR}"
 
 # Mark the repo as safe — Docker mounts often have UID mismatches that
 # trigger git's "dubious ownership" error on otherwise-fine repos.
-git config --global --add safe.directory "${PROJECT_DIR}"
+# --add is not idempotent and /root/.gitconfig lives in the container's
+# writable layer, so a plain `--add` appended a duplicate line on every
+# container restart (observed: 7 identical entries after 7 restarts).
+if ! git config --global --get-all safe.directory 2>/dev/null | grep -qxF "${PROJECT_DIR}"; then
+    git config --global --add safe.directory "${PROJECT_DIR}"
+fi
 
 log() {
     echo "$(date -u +%FT%TZ) [deploy-agent] $*"

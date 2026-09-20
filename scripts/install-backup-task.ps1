@@ -31,8 +31,16 @@ Register-ScheduledTask `
     -Trigger     $Trigger `
     -Settings    $Settings `
     -Principal   $Principal `
-    -Description "Nightly pg_dump of finance Postgres container, gzipped to D:\backups\finance with 30-day retention."
+    -Description "Nightly pg_dump of finance Postgres container, gzipped to D:\backups\finance with 30-day retention." | Out-Null
+
+# Register-ScheduledTask can report failure without terminating, so confirm.
+# The S4U principal above is the usual reason it fails: it needs elevation.
+if (-not (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)) {
+    throw "Task '$TaskName' was not registered. Re-run this script as Administrator."
+}
 
 Write-Host "Installed scheduled task: $TaskName"
-Write-Host "Next run: $((Get-ScheduledTask -TaskName $TaskName | Get-ScheduledTaskInfo).NextRunTime)"
-Write-Host "To run now: Start-ScheduledTask -TaskName $TaskName"
+Write-Host "  runs: $Bash -lc `"$ScriptForBash`""
+Write-Host "  next: $((Get-ScheduledTask -TaskName $TaskName | Get-ScheduledTaskInfo).NextRunTime)"
+Write-Host ""
+Write-Host "To run it now: Start-ScheduledTask -TaskName $TaskName"

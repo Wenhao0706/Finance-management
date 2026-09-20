@@ -38,6 +38,18 @@ services:
       FIREBASE_PROJECT_NUMBER: "${FIREBASE_PROJECT_NUMBER:-}"
       FIREBASE_APP_ID: "${FIREBASE_APP_ID:-}"
       APPCHECK_ENFORCE: "${APPCHECK_ENFORCE:-false}"
+      # Lockout alert emails (Resend). Program.cs reads these from the process
+      # environment; without them the backend silently falls back to
+      # NoOpEmailSender and no alert is ever sent. Optional by design — all use
+      # `:-` so a blank value keeps the no-op sender rather than failing boot.
+      RESEND_API_KEY: "${RESEND_API_KEY:-}"
+      RESEND_FROM_ADDRESS: "${RESEND_FROM_ADDRESS:-noreply@manhou.de}"
+      # Non-empty default on purpose: Program.cs falls back with `?? "..."`,
+      # which only catches null. An empty env var IS set as far as .NET is
+      # concerned, so passing "" here would silently address alerts to nobody.
+      ADMIN_ALERT_EMAIL: "${ADMIN_ALERT_EMAIL:-wenhaoyuan02@gmail.com}"
+      RESET_PASSWORD_URL: "${RESET_PASSWORD_URL:-https://finance.manhou.de/forgot-password}"
+      LOCKOUT_ALERTS_ENABLED: "${LOCKOUT_ALERTS_ENABLED:-true}"
     ports:
       - "127.0.0.1:5143:8080"   # loopback only — public traffic enters via nginx → frontend container
     volumes:
