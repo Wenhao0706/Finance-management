@@ -1,13 +1,14 @@
-# Installs a Windows Scheduled Task that brings the finance stack up at logon,
-# once Docker Desktop's WSL socket actually exists. Idempotent -- re-running
-# replaces the existing task.
+# Installs the Windows Scheduled Task that runs the finance stack.
+# Idempotent -- re-running replaces the existing task.
 #
-# Why a task and not just `restart: unless-stopped`:
-#   Docker Desktop starts accepting commands before the Ubuntu distro's
-#   /var/run/docker.sock is re-created. A container created in that window
-#   bakes a dead bind-mount resolution into its config and then fails on every
-#   restart-policy retry, forever. Healing it requires a force-recreate, which
-#   is what scripts/ensure-stack-up.sh does.
+# The task does two jobs, both essential:
+#
+#   1. Brings the stack up once dockerd is reachable.
+#   2. STAYS RUNNING FOREVER as the WSL keepalive. WSL tears a distro's
+#      userspace down when no Windows process is attached to it, taking
+#      systemd, dockerd and every container with it. The task process holds
+#      one wsl.exe client open so that never happens. This is why the task has
+#      NO execution time limit and MUST NOT be "fixed" to exit.
 #
 # Run elevated if you can: only an Administrator may register the AtStartup
 # trigger and the S4U principal, which together let the stack come up without
@@ -36,16 +37,22 @@ $IsAdmin = ([Security.Principal.WindowsPrincipal] `
     [Security.Principal.WindowsIdentity]::GetCurrent()
 ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-$Action = New-ScheduledTaskAction -Execute $Wsl -Argument "-d $Distro -e bash $Script"
+$Action = New-ScheduledTaskAction -Execute $Wsl -Argument "-d $Distro -e bash $Script --hold"
 
-# Docker Desktop can take minutes on a cold boot; the script polls for up to
-# 10 minutes, so do not let the task engine kill it early.
+# ExecutionTimeLimit 0 == run forever. Required: this task IS the keepalive.
+# MultipleInstances IgnoreNew so a logon after a startup-trigger run does not
+# spawn a second copy.
 $Settings = New-ScheduledTaskSettingsSet `
     -StartWhenAvailable `
     -DontStopOnIdleEnd `
-    -ExecutionTimeLimit (New-TimeSpan -Minutes 30) `
+    -ExecutionTimeLimit ([TimeSpan]::Zero) `
+    -MultipleInstances IgnoreNew `
     -RestartCount 3 `
     -RestartInterval (New-TimeSpan -Minutes 2)
+
+# Keep running on battery too -- this machine is a server, not a laptop.
+$Settings.DisallowStartIfOnBatteries = $false
+$Settings.StopIfGoingOnBatteries     = $false
 
 if ($IsAdmin) {
     # AtStartup fires without anyone logging in; S4U lets the task run in that
@@ -69,7 +76,7 @@ Register-ScheduledTask `
     -Trigger   $Triggers `
     -Settings  $Settings `
     -Principal $Principal `
-    -Description "Waits for the Docker daemon after boot/logon, then brings the finance stack up and force-recreates any service that lost the WSL docker.sock race." | Out-Null
+    -Description "Brings the finance stack up after boot, then stays running as the WSL keepalive so the distro (and dockerd, and every container) is never torn down." | Out-Null
 
 # Register-ScheduledTask can report failure without terminating, so confirm.
 if (-not (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)) {
@@ -78,12 +85,15 @@ if (-not (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)) 
 
 Write-Host "Installed scheduled task: $TaskName"
 Write-Host "  mode: $Mode"
-Write-Host "  runs: $Wsl -d $Distro -e bash $Script"
+Write-Host "  runs: $Wsl -d $Distro -e bash $Script --hold"
 Write-Host "  log:  $RepoPath/startup.log"
+Write-Host ""
+Write-Host "This task is expected to stay in the Running state forever -- that is the"
+Write-Host "keepalive holding the WSL distro open. If it shows Ready, the stack is down."
 if (-not $IsAdmin) {
     Write-Host ""
     Write-Host "NOTE: re-run this elevated to add the AtStartup trigger, so an unattended" -ForegroundColor Yellow
     Write-Host "      reboot brings the stack up with nobody logged in." -ForegroundColor Yellow
 }
 Write-Host ""
-Write-Host "To test now: Start-ScheduledTask -TaskName $TaskName"
+Write-Host "To start it now: Start-ScheduledTask -TaskName $TaskName"

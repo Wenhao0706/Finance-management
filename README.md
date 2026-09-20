@@ -75,6 +75,36 @@ Email alerts go through a background queue (`IBackgroundTaskQueue` and a `Queued
 
 **On deployment:** this runs self-hosted from a single machine behind a Cloudflare tunnel, with nightly `pg_dump` backups on a 30-day retention. That is a deliberate trade: it costs nothing to run and taught me far more about operating a system than a managed platform would have, but it is only up when that machine is. It previously ran on Fly.io with Supabase and Cloudflare Pages. There is no public demo link here because a link that is sometimes down is worse than no link.
 
+### Hosting it 24/7
+
+The host is a Windows laptop running the stack inside WSL2 (Ubuntu), on a
+**native `dockerd` managed by systemd** -- not Docker Desktop.
+
+That distinction was earned. Under Docker Desktop the daemon lived in an
+interactive user session, so nothing came up until someone logged in, and
+bind-mount sources were resolved through a `docker-desktop-bind-mounts` shim
+that silently substituted an empty directory whenever a path did not exist on
+the host. A missing Firebase key therefore presented as a healthy container
+returning 500s on every authenticated request, rather than as a failure to
+start. Native `dockerd` resolves paths in the distro directly and starts from
+systemd at distro init, so both problems disappear.
+
+One invariant is worth knowing before touching any of this:
+
+> **WSL tears a distro's userspace down when no Windows process is attached to
+> it** -- systemd, `dockerd` and every container go with it, and the next
+> `wsl.exe` call silently re-inits the lot. The `FinanceManagement-Startup`
+> scheduled task runs `scripts/ensure-stack-up.sh --hold`, which never returns.
+> That task process *is* the keepalive. It is supposed to sit in the Running
+> state forever; if it ever shows Ready, the stack is down. Do not "fix" it to
+> exit, and do not give it an execution time limit.
+
+Install or repair the task with `scripts/install-startup-task.ps1`. Run it
+elevated -- only an Administrator can register the `AtStartup` trigger and the
+S4U principal that let the stack come up with nobody logged in. Unelevated it
+still installs, but only triggers at logon. Boot progress is logged to
+`startup.log` in the repo root.
+
 ---
 
 ## Running it locally
