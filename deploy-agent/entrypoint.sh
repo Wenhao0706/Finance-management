@@ -5,23 +5,37 @@
 #
 # Required mounts (set in docker-compose.yml):
 #   /var/run/docker.sock  — talk to host Docker daemon (rebuild containers)
-#   /workspace            — the project directory (git pull + compose context)
+#   $PROJECT_DIR          — the project directory (git pull + compose context).
+#                           MUST be mounted at the same absolute path it has on
+#                           the host: we drive the host's Docker daemon over the
+#                           socket, so that daemon resolves relative bind-mount
+#                           sources in docker-compose.yml against the HOST
+#                           filesystem, not ours. Mounting the repo somewhere
+#                           else (the old hardcoded /workspace) made
+#                           `./backend/x` resolve to a host path that does not
+#                           exist -- and Docker silently creates an empty
+#                           DIRECTORY for a missing bind source instead of
+#                           failing, which is how a missing Firebase key turned
+#                           into 500s on every authenticated request.
 #
 # Required env:
 #   POLL_INTERVAL_SECONDS  — polling cadence (default 300 = 5 minutes)
 #   GIT_BRANCH             — branch to track (default main)
 #   COMPOSE_SERVICES       — services to rebuild on change (default "backend frontend")
+#   PROJECT_DIR            — absolute path of the repo, identical on the host
+#                            and in here (default: the working dir)
 set -eu
 
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-300}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
 COMPOSE_SERVICES="${COMPOSE_SERVICES:-backend frontend}"
 
-cd /workspace
+PROJECT_DIR="${PROJECT_DIR:-$PWD}"
+cd "${PROJECT_DIR}"
 
-# Mark workspace as safe — Docker mounts often have UID mismatches that
+# Mark the repo as safe — Docker mounts often have UID mismatches that
 # trigger git's "dubious ownership" error on otherwise-fine repos.
-git config --global --add safe.directory /workspace
+git config --global --add safe.directory "${PROJECT_DIR}"
 
 log() {
     echo "$(date -u +%FT%TZ) [deploy-agent] $*"

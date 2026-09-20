@@ -99,10 +99,18 @@ services:
       POLL_INTERVAL_SECONDS: "${DEPLOY_POLL_INTERVAL_SECONDS:-300}"
       GIT_BRANCH: "${DEPLOY_GIT_BRANCH:-main}"
       COMPOSE_SERVICES: "backend frontend"
+      PROJECT_DIR: "${HOST_PROJECT_DIR:?set HOST_PROJECT_DIR in .env to this repo's absolute path on the host (see .env.example)}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - .:/workspace
-    working_dir: /workspace
+      # Mounted at its own host path, NOT a synthetic /workspace. This agent
+      # drives the host daemon over docker.sock, so that daemon resolves the
+      # relative bind sources above (e.g. ./backend/firebase-service-account.json)
+      # against the HOST filesystem. Mounting the repo anywhere else makes those
+      # resolve to host paths that do not exist, and Docker then silently
+      # substitutes an empty directory rather than erroring. Keep the two sides
+      # of this mount identical.
+      - .:${HOST_PROJECT_DIR:?set HOST_PROJECT_DIR in .env to this repo's absolute path on the host (see .env.example)}
+    working_dir: ${HOST_PROJECT_DIR:?set HOST_PROJECT_DIR in .env to this repo's absolute path on the host (see .env.example)}
     restart: unless-stopped
 
 volumes:
